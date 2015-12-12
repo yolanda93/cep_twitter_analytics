@@ -24,27 +24,31 @@ public class trendingTopology
     public static void main(String[] args) throws Exception
     {
         BasicConfigurator.configure();
-
+        String[] languages;
         if (args != null && args.length > 0)
         {
+            languages=args[0].split(",");
             StormSubmitter.submitTopology(
                 args[3], // topology name
                 createConfig(false),
-                createTopology());
-        }
-        else
-        {
+                createTopology(languages));
+            
+         /* //Test in a local cluster
             LocalCluster cluster = new LocalCluster();
             cluster.submitTopology(
                 "sentiment-analysis",
                 createConfig(true),
                 createTopology());
             Thread.sleep(60000);
-            cluster.shutdown();
+            cluster.shutdown();*/
+        }
+        else{
+         System.out.println("Arguments: langList, Zookeeper URL, winParams, topologyName, Folder");
+         System.exit(1);
         }
     }
 
-    private static StormTopology createTopology()
+    private static StormTopology createTopology(String[] languages)
     {
         SpoutConfig kafkaConf = new SpoutConfig(
             new ZkHosts(ZOOKEEPER_URL),
@@ -56,7 +60,7 @@ public class trendingTopology
 
         topology.setSpout("kafka_spout", new KafkaSpout(kafkaConf), 4);
 
-        topology.setBolt("twitter_filter", new TwitterFilterBolt(), 4)
+        topology.setBolt("twitter_filter", new TwitterFilterBolt(languages), 4)
                 .shuffleGrouping("kafka_spout");
 
        /* topology.setBolt("text_filter", new TextFilterBolt(), 4)
