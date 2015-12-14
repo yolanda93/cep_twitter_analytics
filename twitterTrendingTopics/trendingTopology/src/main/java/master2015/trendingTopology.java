@@ -10,6 +10,7 @@ import backtype.storm.generated.StormTopology;
 import backtype.storm.StormSubmitter;
 import backtype.storm.spout.SchemeAsMultiScheme;
 import backtype.storm.topology.TopologyBuilder;
+import backtype.storm.tuple.Fields;
 import storm.kafka.KafkaSpout;
 import storm.kafka.SpoutConfig;
 import storm.kafka.ZkHosts;
@@ -20,71 +21,72 @@ public class trendingTopology
 {
     private final Logger LOGGER = Logger.getLogger(this.getClass());
     private static final String KAFKA_TOPIC = "twitter-topic";
-    private static final String ZOOKEEPER_URL ="node0:2181,node2:2181,node4:2181";
+    private static final String ZOOKEEPER_URL = "localhost:2181";//"138.4.110.141:1003,138.4.110.141:1002";
+    
     public static void main(String[] args) throws Exception
     {
         BasicConfigurator.configure();
         String[] languages;
-        if (args != null && args.length > 0)
+        int windowAdvance;
+        int windowSize;
+        String topologyName;
+        String folder;
+        if (args != null && args.length>4)
         {
-            languages=args[0].split(",");
-            StormSubmitter.submitTopology(
+             
+             languages=args[0].split(",");
+             String[] windowParams=args[2].split(",");
+             windowSize=Integer.parseInt(windowParams[0]);
+             windowAdvance=Integer.parseInt(windowParams[1]);
+             topologyName=args[3];
+             folder=args[4];
+           /*  StormSubmitter.submitTopology(
                 args[3], // topology name
                 createConfig(false),
-                createTopology(languages));
+                createTopology(languages));*/
             
-         /* //Test in a local cluster
+          //Test in a local cluster
             LocalCluster cluster = new LocalCluster();
             cluster.submitTopology(
-                "sentiment-analysis",
+                topologyName,
                 createConfig(true),
-                createTopology());
+                createTopology(languages,windowSize,windowAdvance,folder));
             Thread.sleep(60000);
-            cluster.shutdown();*/
+            cluster.shutdown();
         }
         else{
          System.out.println("Arguments: langList, Zookeeper URL, winParams, topologyName, Folder");
-         System.exit(1);
+         System.exit(0);
         }
     }
 
-    private static StormTopology createTopology(String[] languages)
+    private static StormTopology createTopology(String[] languages, int windowSize,int windowAdvance,String folder)
     {
+         TopologyBuilder topology = new TopologyBuilder();
         SpoutConfig kafkaConf = new SpoutConfig(
             new ZkHosts(ZOOKEEPER_URL),
             KAFKA_TOPIC,
             "/kafka",
             "KafkaSpout");
-        kafkaConf.scheme = new SchemeAsMultiScheme(new StringScheme());
-        TopologyBuilder topology = new TopologyBuilder();
+        kafkaConf.scheme = new SchemeAsMultiScheme(new StringScheme());     
 
         topology.setSpout("kafka_spout", new KafkaSpout(kafkaConf), 4);
 
         topology.setBolt("twitter_filter", new TwitterFilterBolt(languages), 4)
                 .shuffleGrouping("kafka_spout");
+        
+       topology.setBolt("rolling-counter", new RollingCountBolt(9, 3), 4)
+               .fieldsGrouping("twitter_filter", new Fields("timestamp", "lang", "hashtag"));
+        
+        
+       // topology.setBolt("total-ranker", new TotalRankingsBolt(3))
+       //         .fieldsGrouping("rolling-counter", new Fields("tweet_lang","hashtag"));
+        
+       //topology.setBolt("hdfs", new HDFSBolt(), 4)
+       //         .shuffleGrouping("score");
+      //  topology.setBolt("nodejs", new NodeNotifierBolt(), 4)
+       //         .shuffleGrouping("score");
 
-       /* topology.setBolt("text_filter", new TextFilterBolt(), 4)
-                .shuffleGrouping("twitter_filter");
-
-        topology.setBolt("stemming", new StemmingBolt(), 4)
-                .shuffleGrouping("text_filter");
-
-        topology.setBolt("positive", new PositiveSentimentBolt(), 4)
-                .shuffleGrouping("stemming");
-        topology.setBolt("negative", new NegativeSentimentBolt(), 4)
-                .shuffleGrouping("stemming");
-
-        topology.setBolt("join", new JoinSentimentsBolt(), 4)
-                .fieldsGrouping("positive", new Fields("tweet_id"))
-                .fieldsGrouping("negative", new Fields("tweet_id"));
-
-        topology.setBolt("score", new SentimentScoringBolt(), 4)
-                .shuffleGrouping("join");
-
-        topology.setBolt("hdfs", new HDFSBolt(), 4)
-                .shuffleGrouping("score");
-        topology.setBolt("nodejs", new NodeNotifierBolt(), 4)
-                .shuffleGrouping("score");*/
 
         return topology.createTopology();
     }
