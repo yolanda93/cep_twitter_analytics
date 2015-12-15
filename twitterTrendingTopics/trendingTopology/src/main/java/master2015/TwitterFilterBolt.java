@@ -44,13 +44,14 @@ public class TwitterFilterBolt extends BaseBasicBolt {
         String json = input.getString(0);
         try {
             JsonNode root = mapper.readValue(json, JsonNode.class);
-            long timestamp;
+            String timestamp;
             String tweet_lang;
             String hashtag;
             if (root.get("lang") != null && isValidLang(root.get("lang").textValue())) {
                 if (root.get("timestamp_ms") != null && root.get("entities").get("hashtags") != null) {
-                    timestamp = root.get("timestamp_ms").asLong();
-                    tweet_lang = root.get("lang").textValue();
+                    timestamp = root.get("timestamp_ms").toString();
+                    LOGGER.debug("HASHTAGASSSSS" +timestamp );
+                    tweet_lang = root.get("lang").toString();
                     String array = root.get("entities").get("hashtags").toString();
                     if (array.length() > 0) {
                         ArrayList<String> array2 = new ArrayList<String>();
@@ -59,13 +60,13 @@ public class TwitterFilterBolt extends BaseBasicBolt {
                         if (!array2.isEmpty()) {
                             JsonNode rooter;
                             for (int i = 0; i < array2.size(); i++) {
-                                LOGGER.debug("HASHTAGASSSSS" + array2.toArray()[i].toString());
+                                
                                 // rooter= mapper.readValue( array2.toArray()[i].toString(), JsonNode.class);
                                 String[] firstPart = array2.toArray()[i].toString().split("=");
                                 String[] hasj = firstPart[1].split(",");
 
                                 LOGGER.debug("Emiting tweet with hashtag: ------------- " + hasj[0]);
-                                collector.emit(new Values(timestamp, tweet_lang, hasj[0]));
+                                collector.emit(new Values(timestamp, tweet_lang, hasj[0].toString()));
                             }
 
                         }

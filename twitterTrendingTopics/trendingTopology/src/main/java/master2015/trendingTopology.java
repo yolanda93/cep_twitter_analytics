@@ -75,8 +75,8 @@ public class trendingTopology
         topology.setBolt("twitter_filter", new TwitterFilterBolt(languages), 4)
                 .shuffleGrouping("kafka_spout");
         
-       topology.setBolt("rolling-counter", new RollingCountBolt(9, 3), 4)
-               .fieldsGrouping("twitter_filter", new Fields("timestamp", "lang", "hashtag"));
+       topology.setBolt("rolling-counter", new RollingCountBolt(30, 3), 4)
+               .fieldsGrouping("twitter_filter", new Fields( "hashtag"));
         
         
        // topology.setBolt("total-ranker", new TotalRankingsBolt(3))
