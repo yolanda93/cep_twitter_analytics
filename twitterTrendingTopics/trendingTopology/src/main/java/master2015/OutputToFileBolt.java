@@ -16,7 +16,7 @@ import java.util.Map;
  *
  * @author yolanda
  */
-public class Top3CalculatorBolt extends BaseRichBolt {
+public class OutputToFileBolt extends BaseRichBolt {
 
     public void declareOutputFields(OutputFieldsDeclarer ofd) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

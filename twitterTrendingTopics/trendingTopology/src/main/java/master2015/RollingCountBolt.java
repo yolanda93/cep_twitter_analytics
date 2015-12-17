@@ -13,33 +13,19 @@ import backtype.storm.Constants;
 import backtype.storm.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 
-/**
- * This bolt performs rolling counts of incoming objects, i.e. sliding window based counting.
- * <p/>
- * The bolt is configured by two parameters, the length of the sliding window in seconds (which influences the output
- * data of the bolt, i.e. how it will count objects) and the emit frequency in seconds (which influences how often the
- * bolt will output the latest window counts). For instance, if the window length is set to an equivalent of five
- * minutes and the emit frequency to one minute, then the bolt will output the latest five-minute sliding window every
- * minute.
- * <p/>
- * The bolt emits a rolling count tuple per object, consisting of the object itself, its latest rolling count, and the
- * actual duration of the sliding window. The latter is included in case the expected sliding window length (as
- * configured by the user) is different from the actual length, e.g. due to high system load. Note that the actual
- * window length is tracked and calculated for the window, and not individual
- * 
- * ly for each object within a window.
- * <p/>
- * Note: During the startup phase you will usually observe that the bolt warns you about the actual sliding window
- * length being smaller than the expected length. This behavior is expected and is caused by the way the sliding window
- * counts are initially "loaded up". You can safely ignore this warning during startup (e.g. you will see this warning
- * during the first ~ five minutes of startup time if the window length is set to five minutes).
- */
+  
+
 public class RollingCountBolt extends BaseRichBolt {
 
   private static final long serialVersionUID = 5537727428628598519L;
@@ -51,7 +37,7 @@ public class RollingCountBolt extends BaseRichBolt {
       "Actual window length is %d seconds when it should be %d seconds"
           + " (you can safely ignore this warning during the startup phase)";
 
-  private final Map<String,SlidingWindowCounter<Object>>  counter; // Key =  lang / Value = SlidingWindowCounter
+  private final Map<String,SlidingWindowCounter<String>>  counter; // Key =  lang / Value = SlidingWindowCounter
   private final int windowLengthInSeconds;
   private final int advance_window;
   private OutputCollector collector;
@@ -63,13 +49,13 @@ public class RollingCountBolt extends BaseRichBolt {
   public RollingCountBolt(int windowLengthInSeconds, int emitFrequencyInSeconds) {
     this.windowLengthInSeconds = windowLengthInSeconds;
     this.advance_window = emitFrequencyInSeconds;
-    this.counter = new HashMap<String,SlidingWindowCounter<Object>>();
+    this.counter = new HashMap<String,SlidingWindowCounter<String>>();
   }
   
   private void createNewSlidingWindow(String lang, long timestamp) {
-   SlidingWindowCounter<Object> lang_window;
+   SlidingWindowCounter<String> lang_window;
     if ( counter.get(lang) == null) {
-      lang_window = new SlidingWindowCounter<Object>(deriveNumWindowChunksFrom(this.windowLengthInSeconds,
+      lang_window = new SlidingWindowCounter<String>(deriveNumWindowChunksFrom(this.windowLengthInSeconds,
         this.advance_window),calculateInitialInterval(timestamp));
       counter.put(lang, lang_window);
     }
@@ -129,35 +115,74 @@ public class RollingCountBolt extends BaseRichBolt {
   private void emitCurrentWindowCounts(String lang, long timestamp) { 
     int n_intervals_advance = calculateInitialInterval(timestamp-getCurrentLowerLimit(lang));
     System.out.println("Advance intervals" + n_intervals_advance);
-    Map<Object, Long> counts = counter.get(lang).getCountsThenAdvanceWindow(n_intervals_advance);
+    Map<String, Long> counts = counter.get(lang).getCountsThenAdvanceWindow(n_intervals_advance);
     emit(counts,lang);
   }
   
-    private void getTop3(Map<Object, Long> counts) {
+  
+    private void getTop3(Map<String, Long> counts) {
       List<Long> c;
       c = new ArrayList<Long>(counts.values());
         Collections.sort(c);
         LOG.debug(" TOP 3----------------------------------------------------------!!!!!!!!!");
-       
-        for (int i = 3; i >= 0; i--) { // The top 3 is emitted.
+        if(counts.size()>=3){
+        for (int i = 2; i >= 0; i--) { // The top 3 is emitted.
             System.out.println(i + " rank is " + c.get(i));
+        }
         }
        
     }
+    
+   public LinkedHashMap sortHashMapByValuesD(HashMap passedMap) {
+   List mapKeys = new ArrayList(passedMap.keySet());
+   List mapValues = new ArrayList(passedMap.values());
+   Collections.sort(mapValues);
+   Collections.sort(mapKeys);
+
+   LinkedHashMap sortedMap = new LinkedHashMap();
+
+   Iterator valueIt = mapValues.iterator();
+   while (valueIt.hasNext()) {
+       Object val = valueIt.next();
+       Iterator keyIt = mapKeys.iterator();
+
+       while (keyIt.hasNext()) {
+           Object key = keyIt.next();
+           String comp1 = passedMap.get(key).toString();
+           String comp2 = val.toString();
+
+           if (comp1.equals(comp2)){
+               passedMap.remove(key);
+               mapKeys.remove(key);
+               sortedMap.put((String)key, (Double)val);
+               break;
+           }
+
+       }
+
+   }
+   return sortedMap;
+}
  
-  private void emit(Map<Object, Long> counts,String lang) {
-      getTop3(counts);
-    for (Entry<Object, Long> entry : counts.entrySet()) {
-      Object obj = entry.getKey();
-      Long count = entry.getValue();
-      
-      LOG.debug("coun:" + count + "actualLowerLimit:" + getCurrentLowerLimit(lang));
-      collector.emit(new Values(obj, count, getCurrentLowerLimit(lang)));
+private void emit(Map<String, Long> counts, String lang) {
+        Set<Entry<String, Long>> set = counts.entrySet();
+        List<Entry<String, Long>> list = new ArrayList<Entry<String, Long>>(set);
+        Collections.sort(list, new Comparator<Map.Entry<String, Long>>() {
+            public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
+                return (o2.getValue()).compareTo(o1.getValue());
+            }
+        });
+        for (Map.Entry<String, Long> entry : list) {
+            System.out.println(entry.getKey() + " ==== " + entry.getValue());
+
+            LOG.debug("coun:" + entry.getValue() + "actualLowerLimit:" + getCurrentLowerLimit(lang));
+            collector.emit(new Values(entry.getKey(), entry.getValue(), getCurrentLowerLimit(lang)));
+        }
     }
-  }
+
 
   private void countObjAndAck(Tuple tuple) {
-    Object obj = tuple.getValue(2);
+    String obj = tuple.getValue(2).toString();
     counter.get(tuple.getValue(1).toString()).incrementCount(obj);
     //collector.ack(tuple);
   }

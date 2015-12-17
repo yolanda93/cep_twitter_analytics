@@ -78,8 +78,8 @@ public class trendingTopology
         topology.setBolt("rolling-counter", new RollingCountBolt(30, 1), 1)
            .fieldsGrouping("twitter_filter", new Fields("hashtag","lang"));
                
-     //   topology.setBolt("total-ranker", new Top3CalculatorBolt())
-       //        .fieldsGrouping("rolling-counter", new Fields("actualWindowLengthInSeconds"));
+       topology.setBolt("ranking-result", new OutputToFileBolt())
+            .allGrouping("rolling-counter", new Fields("lang"));
         
        //topology.setBolt("hdfs", new HDFSBolt(), 4)
        //         .shuffleGrouping("score");
