@@ -9,15 +9,10 @@ import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import clojure.reflect.TypeReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 public class TwitterFilterBolt extends BaseBasicBolt {
 
@@ -46,32 +41,27 @@ public class TwitterFilterBolt extends BaseBasicBolt {
             JsonNode root = mapper.readValue(json, JsonNode.class);
             String timestamp;
             String tweet_lang;
-            String hashtag;
+            String[] hashtag;
             if (root.get("lang") != null && isValidLang(root.get("lang").textValue())) {
                 if (root.get("timestamp_ms") != null && root.get("entities").get("hashtags") != null) {
                     timestamp = root.get("timestamp_ms").toString();
-                    LOGGER.debug("HASHTAGASSSSS" +timestamp );
                     tweet_lang = root.get("lang").toString();
                     String array = root.get("entities").get("hashtags").toString();
                     if (array.length() > 0) {
-                        ArrayList<String> array2 = new ArrayList<String>();
-
-                        array2 = mapper.readValue(root.get("entities").get("hashtags").toString(), ArrayList.class);
-                        if (!array2.isEmpty()) {
-                            JsonNode rooter;
-                            for (int i = 0; i < array2.size(); i++) {
-                                
-                                // rooter= mapper.readValue( array2.toArray()[i].toString(), JsonNode.class);
-                                String[] firstPart = array2.toArray()[i].toString().split("=");
-                                String[] hasj = firstPart[1].split(",");
-
-                                LOGGER.debug("Emiting tweet with hashtag: ------------- " + hasj[0]);
-                                collector.emit(new Values(timestamp, tweet_lang, hasj[0].toString()));
+                        ArrayList<String> hashtags_list;
+                        hashtags_list = mapper.readValue(root.get("entities").get("hashtags").toString(), ArrayList.class);
+                        //dfsfsñdfldsmfñsdlfmsñdlm
+                        if (!hashtags_list.isEmpty()) {
+                            for (int i = 0; i < hashtags_list.size(); i++) {
+                                String[] firstPart = hashtags_list.toArray()[i].toString().split("=");
+                                hashtag = firstPart[1].split(",");
+                                LOGGER.debug("--------------> Emiting tweet with hashtag: " + hashtag[0]);
+                                collector.emit(new Values(timestamp, tweet_lang, hashtag[0]));
                             }
-
                         }
+                    } else {
+                        LOGGER.debug("hashtag was null");
                     }
-
                 } else {
                     LOGGER.debug("tweet timestamp and/ or hashtag was null");
                 }

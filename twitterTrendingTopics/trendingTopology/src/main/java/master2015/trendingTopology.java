@@ -75,12 +75,11 @@ public class trendingTopology
         topology.setBolt("twitter_filter", new TwitterFilterBolt(languages), 4)
                 .shuffleGrouping("kafka_spout");
         
-       topology.setBolt("rolling-counter", new RollingCountBolt(30, 3), 4)
-               .fieldsGrouping("twitter_filter", new Fields( "hashtag"));
-        
-        
-       // topology.setBolt("total-ranker", new TotalRankingsBolt(3))
-       //         .fieldsGrouping("rolling-counter", new Fields("tweet_lang","hashtag"));
+        topology.setBolt("rolling-counter", new RollingCountBolt(30, 3), 4)
+               .fieldsGrouping("twitter_filter", new Fields( "hashtag","lang"));
+               
+     //   topology.setBolt("total-ranker", new Top3CalculatorBolt())
+       //        .fieldsGrouping("rolling-counter", new Fields("actualWindowLengthInSeconds"));
         
        //topology.setBolt("hdfs", new HDFSBolt(), 4)
        //         .shuffleGrouping("score");
