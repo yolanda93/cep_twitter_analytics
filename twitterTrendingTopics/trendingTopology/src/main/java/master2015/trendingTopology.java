@@ -70,13 +70,13 @@ public class trendingTopology
             "KafkaSpout");
         kafkaConf.scheme = new SchemeAsMultiScheme(new StringScheme());     
 
-        topology.setSpout("kafka_spout", new KafkaSpout(kafkaConf), 4);
+        topology.setSpout("kafka_spout", new KafkaSpout(kafkaConf), 2);
 
-        topology.setBolt("twitter_filter", new TwitterFilterBolt(languages), 4)
+        topology.setBolt("twitter_filter", new TwitterFilterBolt(languages), 2)
                 .shuffleGrouping("kafka_spout");
         
-        topology.setBolt("rolling-counter", new RollingCountBolt(30, 3), 4)
-               .fieldsGrouping("twitter_filter", new Fields( "hashtag","lang"));
+        topology.setBolt("rolling-counter", new RollingCountBolt(30, 1), 1)
+           .fieldsGrouping("twitter_filter", new Fields("hashtag","lang"));
                
      //   topology.setBolt("total-ranker", new Top3CalculatorBolt())
        //        .fieldsGrouping("rolling-counter", new Fields("actualWindowLengthInSeconds"));

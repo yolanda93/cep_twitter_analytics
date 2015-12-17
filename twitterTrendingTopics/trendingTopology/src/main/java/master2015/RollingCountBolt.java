@@ -11,8 +11,11 @@ import org.apache.log4j.Logger;
 
 import backtype.storm.Constants;
 import backtype.storm.tuple.Tuple;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -48,11 +51,10 @@ public class RollingCountBolt extends BaseRichBolt {
       "Actual window length is %d seconds when it should be %d seconds"
           + " (you can safely ignore this warning during the startup phase)";
 
-  private final SlidingWindowCounter<Object> counter;
+  private final Map<String,SlidingWindowCounter<Object>>  counter; // Key =  lang / Value = SlidingWindowCounter
   private final int windowLengthInSeconds;
-    private final int emitFrequencyInSeconds;
+  private final int advance_window;
   private OutputCollector collector;
-  private NthLastModifiedTimeTracker lastModifiedTracker;
 
   public RollingCountBolt() {
     this(DEFAULT_SLIDING_WINDOW_IN_SECONDS, DEFAULT_EMIT_FREQUENCY_IN_SECONDS);
@@ -60,9 +62,22 @@ public class RollingCountBolt extends BaseRichBolt {
 
   public RollingCountBolt(int windowLengthInSeconds, int emitFrequencyInSeconds) {
     this.windowLengthInSeconds = windowLengthInSeconds;
-    this.emitFrequencyInSeconds = emitFrequencyInSeconds;
-    counter = new SlidingWindowCounter<Object>(deriveNumWindowChunksFrom(this.windowLengthInSeconds,
-        this.emitFrequencyInSeconds));
+    this.advance_window = emitFrequencyInSeconds;
+    this.counter = new HashMap<String,SlidingWindowCounter<Object>>();
+  }
+  
+  private void createNewSlidingWindow(String lang, long timestamp) {
+   SlidingWindowCounter<Object> lang_window;
+    if ( counter.get(lang) == null) {
+      lang_window = new SlidingWindowCounter<Object>(deriveNumWindowChunksFrom(this.windowLengthInSeconds,
+        this.advance_window),calculateInitialInterval(timestamp));
+      counter.put(lang, lang_window);
+    }
+  }
+  
+  private int calculateInitialInterval(long timestamp) {
+    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" + this.advance_window / timestamp);
+    return (int) (timestamp / this.advance_window);
   }
 
   private int deriveNumWindowChunksFrom(int windowLengthInSeconds, int windowUpdateFrequencyInSeconds) {
@@ -73,50 +88,78 @@ public class RollingCountBolt extends BaseRichBolt {
   @Override
   public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
     this.collector = collector;
-    // Get current lower limit and upper limit.
-    lastModifiedTracker = new NthLastModifiedTimeTracker(deriveNumWindowChunksFrom(this.windowLengthInSeconds,
-        this.emitFrequencyInSeconds));
-  }
 
+  }
+  
+   private int getCurrentLowerLimit(String lang) {
+       
+    return ((counter.get(lang).windowIntervalCounter)*advance_window); 
+  }
+  
+
+  private boolean isAdvanceTimeReached(String lang,long timestamp) {
+      System.out.println("LOWER LIMIT: "+ (getCurrentLowerLimit(lang)));
+      System.out.println("TIMESTAMP 2: "+ timestamp);
+      System.out.println("TO REACH THE LIMIT: "+ (timestamp-getCurrentLowerLimit(lang)));
+      return timestamp-getCurrentLowerLimit(lang)>=advance_window;
+  }
+  
+   private long milisecondToSeconds(Long timestamp) {
+    System.out.println("TIMESTAMP 1: "+ timestamp);
+    return (long) (timestamp / 1000); 
+  }
+  
   @Override
-  public void execute(Tuple tuple) {
-   //    LOG.debug( "FIELDSSSS :::::" + tuple.getFields().toString());
-      
-    
-    if (isTickTuple(tuple)) { // Ha pasado el tiempo de avance??
-      LOG.debug("Received tick tuple, triggering emit of current window counts");
-      emitCurrentWindowCounts();
+    public void execute(Tuple tuple) {
+        if (tuple.size() > 2) {
+            String lang = (String) tuple.getValue(1);
+            long timestamp = milisecondToSeconds(Long.valueOf(tuple.getString(0)));
+            System.out.println("------------> new TIMESTAMP: "+ timestamp);
+            createNewSlidingWindow(lang,timestamp);
+            if (!isAdvanceTimeReached(lang,timestamp)) {
+                countObjAndAck(tuple);
+            } else {
+                LOG.debug("----------->Advance time reached");
+                emitCurrentWindowCounts(lang,timestamp);
+                countObjAndAck(tuple);
+            }
+        }
     }
-    else {
-      countObjAndAck(tuple);
-    }
-  }
 
-  private void emitCurrentWindowCounts() {
-    Map<Object, Long> counts = counter.getCountsThenAdvanceWindow();
-    int actualWindowLengthInSeconds = lastModifiedTracker.secondsSinceOldestModification();
-    lastModifiedTracker.markAsModified();
-    if (actualWindowLengthInSeconds != windowLengthInSeconds) {
-      LOG.warn(String.format(WINDOW_LENGTH_WARNING_TEMPLATE, actualWindowLengthInSeconds, windowLengthInSeconds));
-    }
-    emit(counts, actualWindowLengthInSeconds);
+  private void emitCurrentWindowCounts(String lang, long timestamp) { 
+    int n_intervals_advance = calculateInitialInterval(timestamp-getCurrentLowerLimit(lang));
+    System.out.println("Advance intervals" + n_intervals_advance);
+    Map<Object, Long> counts = counter.get(lang).getCountsThenAdvanceWindow(n_intervals_advance);
+    emit(counts,lang);
   }
-
-  private void emit(Map<Object, Long> counts, int actualWindowLengthInSeconds) {
+  
+    private void getTop3(Map<Object, Long> counts) {
+      List<Long> c;
+      c = new ArrayList<Long>(counts.values());
+        Collections.sort(c);
+        LOG.debug(" TOP 3----------------------------------------------------------!!!!!!!!!");
+       
+        for (int i = 3; i >= 0; i--) { // The top 3 is emitted.
+            System.out.println(i + " rank is " + c.get(i));
+        }
+       
+    }
+ 
+  private void emit(Map<Object, Long> counts,String lang) {
+      getTop3(counts);
     for (Entry<Object, Long> entry : counts.entrySet()) {
       Object obj = entry.getKey();
       Long count = entry.getValue();
       
-      LOG.debug("coun:" + count + "actualLength:" + actualWindowLengthInSeconds);
-      collector.emit(new Values(obj, count, actualWindowLengthInSeconds));
+      LOG.debug("coun:" + count + "actualLowerLimit:" + getCurrentLowerLimit(lang));
+      collector.emit(new Values(obj, count, getCurrentLowerLimit(lang)));
     }
   }
 
   private void countObjAndAck(Tuple tuple) {
-   LOG.debug( "ROLLING COUNTER VALUE INCOME:::::" +  tuple.getValue(2));
     Object obj = tuple.getValue(2);
-    counter.incrementCount(obj);
-    collector.ack(tuple);
+    counter.get(tuple.getValue(1).toString()).incrementCount(obj);
+    //collector.ack(tuple);
   }
 
   @Override
@@ -127,12 +170,8 @@ public class RollingCountBolt extends BaseRichBolt {
   @Override
   public Map<String, Object> getComponentConfiguration() {
     Map<String, Object> conf = new HashMap<String, Object>();
-    conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, emitFrequencyInSeconds);
+    conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, advance_window);
     return conf;
   }
   
-  public static boolean isTickTuple(Tuple tuple) {
-    return tuple.getSourceComponent().equals(Constants.SYSTEM_COMPONENT_ID) && tuple.getSourceStreamId().equals(
-        Constants.SYSTEM_TICK_STREAM_ID);
-  }
 }

@@ -44,18 +44,18 @@ public class TwitterFilterBolt extends BaseBasicBolt {
             String[] hashtag;
             if (root.get("lang") != null && isValidLang(root.get("lang").textValue())) {
                 if (root.get("timestamp_ms") != null && root.get("entities").get("hashtags") != null) {
-                    timestamp = root.get("timestamp_ms").toString();
-                    tweet_lang = root.get("lang").toString();
+                    timestamp = root.get("timestamp_ms").textValue();
+                    tweet_lang = root.get("lang").textValue();
                     String array = root.get("entities").get("hashtags").toString();
                     if (array.length() > 0) {
                         ArrayList<String> hashtags_list;
                         hashtags_list = mapper.readValue(root.get("entities").get("hashtags").toString(), ArrayList.class);
-                        //dfsfsñdfldsmfñsdlfmsñdlm
                         if (!hashtags_list.isEmpty()) {
                             for (int i = 0; i < hashtags_list.size(); i++) {
                                 String[] firstPart = hashtags_list.toArray()[i].toString().split("=");
                                 hashtag = firstPart[1].split(",");
                                 LOGGER.debug("--------------> Emiting tweet with hashtag: " + hashtag[0]);
+                                LOGGER.debug("--------------> Emiting tweet with lang: " + tweet_lang);
                                 collector.emit(new Values(timestamp, tweet_lang, hashtag[0]));
                             }
                         }
