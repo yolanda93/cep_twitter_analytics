@@ -31,16 +31,6 @@
            <artifactId>twitter4j-stream</artifactId>
            <version>3.0.5</version>
          </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.4.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.4.2</version>
-        </dependency>
     </dependencies>
     
     <build>
@@ -53,7 +43,7 @@
                   <target>1.7</target>
                  </configuration>
               </plugin>
-            <!--  <plugin>
+              <plugin>
              <groupId>org.codehaus.mojo</groupId>
               <artifactId>appassembler-maven-plugin</artifactId>
                 <version>1.6</version>
@@ -71,16 +61,18 @@
                         <platform>unix</platform>
                     </platforms>
                     <programs>
+                        <program>
                         <mainClass>master.TwitterApp</mainClass>
-                        <name>startTwitterApp.sh</name>
+                        <name>startTwitterApp.sh</name>                   
                         <jvmSettings>
                             <extraArguments>
                                 <extraArgument>-server</extraArgument>
                             </extraArguments>
                         </jvmSettings>
+                        </program>
                     </programs>
                 </configuration>
-            </plugin>      -->   
+            </plugin>        
         </plugins>
     </build>        
 </project>

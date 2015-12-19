@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package master;
 
 import java.io.BufferedReader;
@@ -33,12 +28,14 @@ import java.util.Properties;
 
 /**
  *
- * @author yolanda
+ * @author Yolanda de la Hoz Simon - 53826071E
+ * @version 1.2 12 de Diciembre de 2015
  */
 public class TwitterApp {
 
     private static final Logger logger = LoggerFactory.getLogger(TwitterApp.class);
 
+    private static final String KAFKA_TOPIC = "twitter-topic";
     // Information necessary for accessing the Twitter API
     private String consumerKey;
     private String consumerSecret;
@@ -51,48 +48,58 @@ public class TwitterApp {
     // twitter stream to collect raw JSON data 
     private TwitterStream twitterStream;
 
+     /**
+     * Method to set the necessary parameters
+     * @param args Arguments passed by command line       
+     */
     private void setContext(String[] args, int mode) {
         logger.debug("Setting parameters");
         props = new Properties();
-        if (args.length < 5) {
-            props.put("metadata.broker.list", "localhost:9092"); //Kafka Broker URLs     
-        } else {
-            props.put("metadata.broker.list", args[5]); //Kafka Broker URLs   
-        }
-
+              
         props.put("serializer.class", "kafka.serializer.StringEncoder");
         props.put("request.required.acks", "1");
 
-        if (mode == 1) {
-            if (args.length < 6) {
-                filePath = "/home/yolanda/NetBeansProjects/twitterapp/twitterApp/tweetsLogFile.txt";
+        if (mode == 1) { // Reads from file
+            if (args.length>6) 
+             props.put("metadata.broker.list", args[5]); //Kafka Broker URLs 
+            else
+             props.put("metadata.broker.list", args[2]); //Kafka Broker URLs 
+            if (args.length>2) {
+                filePath = args[1]; // Filepath is provided as a second argument.
             } else {
-                filePath = args[6];  //Filename          
+                filePath = args[6]; // Filepath is provided as a sixth argument.          
             }
         } else if (args.length < 2) {
             consumerKey = "FjFVvfxNkx3aqv2X0KYJKnxIP";
             consumerSecret = "7IIB5CafrQIRlkHuO328KUQMgPlEjDtas3ciJYud7DdqTC0Kem";
             accessToken = "475871668-W6d8hmIVwpjaypzxSDEmjrufRP58pJU5pKJvmNaR";
             accessTokenSecret = "zFJUvJoOspsb39E2HcQsIQ6RfZBfYNuGGZhgQJ0gfJ9Df";
+            props.put("metadata.broker.list", args[5]); //Kafka Broker URLs 
         } else {
             consumerKey = args[1];
             consumerSecret = args[2];
             accessToken = args[3];
             accessTokenSecret = args[4];
+            props.put("metadata.broker.list", args[5]); //Kafka Broker URLs 
         }
     }
-
-    private void readFromFile(Producer<String, String> producer) {
-        logger.debug("reading from file: " + filePath);
+ 
+     /**
+     * Method to read tweets for a preloaded log file in JSON format  and send tweets from kafka topic
+     * @param producer Kafka producer to send by the topic twitter-topic     
+     */
+    private void readFromFile(Producer<String, String> producer){
+        logger.debug("Reading from file: " + filePath);
         BufferedReader rd = null;
         try {
             try {
                 rd = new BufferedReader(new FileReader(filePath));
                 String line = null;
-                logger.debug("Producing messages");
 
                 while ((line = rd.readLine()) != null) {
-                    producer.send(new KeyedMessage<String, String>("twitter-topic", line));
+                    logger.debug("----------------------------->Producing messages: " +line);
+                    KeyedMessage<String, String> data = new KeyedMessage<>(KAFKA_TOPIC, DataObjectFactory.getRawJSON(line));
+                    producer.send(data);
                 }
                 logger.debug("Done sending messages");
             } catch (IOException ex) {
@@ -108,6 +115,7 @@ public class TwitterApp {
                     rd.close();
                 }
                 if (producer != null) {
+                    logger.debug("Producer close");
                     producer.close();
                 }
             } catch (IOException ex) {
@@ -117,6 +125,10 @@ public class TwitterApp {
         }
     }
 
+    /**
+    * Method to read tweets from the twitter API and send tweets from kafka topic
+    * @param producer Kafka producer to send by the topic twitter-topic     
+    */
     private void readFromTwitterApi(final Producer<String, String> producer) {
         logger.debug("reading from twitter api");
         // Set up twitter properties 
@@ -139,7 +151,7 @@ public class TwitterApp {
             public void onStatus(Status status) {
                 logger.info(status.getUser().getScreenName() + ": " + status.getText());
 
-                KeyedMessage<String, String> data = new KeyedMessage<>("twitter-topic", DataObjectFactory.getRawJSON(status));
+                KeyedMessage<String, String> data = new KeyedMessage<>(KAFKA_TOPIC, DataObjectFactory.getRawJSON(status));
                 producer.send(data);
             }
 
@@ -172,9 +184,13 @@ public class TwitterApp {
         twitterStream.sample();
     }
 
+    /**
+    * Method to start the twitter app with the selected mode
+    * @param mode Mode to start the app. Mode 1 reads from file. Mode 2 reads from twitter API.     
+    */
     private void start(int mode) {
         ProducerConfig config = new ProducerConfig(props);
-        final Producer<String, String> producer = new Producer<String, String>(config);
+        final Producer<String, String> producer = new Producer<>(config);
 
         if (mode == 1) { // Mode = 1, reads from file 
             readFromFile(producer);
@@ -184,19 +200,31 @@ public class TwitterApp {
         }
     }
 
+    /**
+    * Main method
+    * @param args Arguments: mode, apiKey, apiSecret, tokenValue, tokenSecret, kafkaBrokerURL and filename    
+    * @throws java.lang.Exception    
+    */
     public static void main(String[] args) throws Exception {
         BasicConfigurator.configure();
-        System.out.println("Simple twitter App with param " + args[0]);
         int mode = 0;
         if (args.length > 0) {
+            System.out.println("Started twitter kafka producer with mode: " + args[0]);
             try {
                 mode = Integer.parseInt(args[0]);
-            } catch (NumberFormatException e) {
-                System.err.println("Argument" + args[0] + " must be an integer.");
-                System.exit(1);
-            }
+                if (mode==1 && args.length <2 ) {
+                   System.out.println("To start the App with mode 1 it is required the filepath");
+                   System.exit(1);  
+                }
+                if (mode==1 && args.length <3 ) {
+                   System.out.println("To start the App with mode 1 it is required the kafka broker");
+                   System.exit(1);  
+                }
+                if (mode==2 && args.length <5 ) {
+                   System.out.println("To start the App with mode 2 it is required the apiKey, apiSecret, tokenValue, tokenSecret and kafkaBrokerURL");
+                   System.exit(1);  
+                }         
 
-            try {
                 TwitterApp app = new TwitterApp();
                 app.setContext(args, mode);
                 app.start(mode);
@@ -204,7 +232,7 @@ public class TwitterApp {
             } catch (Exception e) {
                 logger.info(e.getMessage());
             }
-
+            
         } else {
             System.out.println("Arguments: mode, apiKey, apiSecret, tokenValue, tokenSecret, kafkaBrokerURL and filename");
             System.exit(1);
