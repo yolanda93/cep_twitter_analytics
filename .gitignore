@@ -1,0 +1,6 @@
+target/
+twitterTrendingTopics/trendingTopology/target/
+twitterApp/target/
+
+twitterTrendingTopics/trendingTopology/.*
+twitterApp/.*

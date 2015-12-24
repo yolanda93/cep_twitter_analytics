@@ -1,6 +1,5 @@
 package master2015;
 
-import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.Map;
 import backtype.storm.topology.BasicOutputCollector;
@@ -14,10 +13,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 
+/**
+ *
+ * @author Yolanda de la Hoz Simon - 53826071E
+ */
 public class TwitterFilterBolt extends BaseBasicBolt {
 
-    private static final long serialVersionUID = 42L;
-    private static final Logger LOGGER = Logger.getLogger(TwitterFilterBolt.class);
+    private static final long serialVersionUID = 1L;
     private static final ObjectMapper mapper = new ObjectMapper();
     String[] lang;
 
@@ -35,7 +37,7 @@ public class TwitterFilterBolt extends BaseBasicBolt {
     }
 
     public void execute(Tuple input, BasicOutputCollector collector) {
-        LOGGER.debug("Filttering incoming tweets");
+        System.out.println("Filttering incoming tweets");
         String json = input.getString(0);
         try {
             JsonNode root = mapper.readValue(json, JsonNode.class);
@@ -54,23 +56,22 @@ public class TwitterFilterBolt extends BaseBasicBolt {
                             for (int i = 0; i < hashtags_list.size(); i++) {
                                 String[] firstPart = hashtags_list.toArray()[i].toString().split("=");
                                 hashtag = firstPart[1].split(",");
-                                LOGGER.debug("--------------> Emiting tweet with hashtag: " + hashtag[0]);
-                                LOGGER.debug("--------------> Emiting tweet with lang: " + tweet_lang);
+                                System.out.println("--------------> Emiting tweet with hashtag: " + hashtag[0]);
+                                System.out.println("--------------> Emiting tweet with lang: " + tweet_lang);
                                 collector.emit(new Values(timestamp, tweet_lang, hashtag[0]));
                             }
                         }
                     } else {
-                        LOGGER.debug("hashtag was null");
+                        System.out.println("hashtag was null");
                     }
                 } else {
-                    LOGGER.debug("tweet timestamp and/ or hashtag was null");
+                    System.out.println("tweet timestamp and/ or hashtag was null");
                 }
             } else {
-                LOGGER.debug("Ignoring tweets from other languages");
+                System.out.println("Ignoring tweets from other languages");
             }
         } catch (IOException ex) {
-            LOGGER.error("IO error while filtering tweets", ex);
-            LOGGER.trace(null, ex);
+            System.out.println("IO error while filtering tweets:" + ex.getMessage());
         }
     }
 
