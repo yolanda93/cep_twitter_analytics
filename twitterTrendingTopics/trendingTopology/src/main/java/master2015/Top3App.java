@@ -13,9 +13,10 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 /**
-*
-* @author Yolanda de la Hoz Simon - 53826071E
-*/
+ * Top3App
+ * Created on Dec 22, 2015
+ * @author Yolanda de la Hoz Simon <yolanda93h@gmail.com>
+ */
 public class Top3App
 {
     private final Logger LOGGER = Logger.getLogger(this.getClass());

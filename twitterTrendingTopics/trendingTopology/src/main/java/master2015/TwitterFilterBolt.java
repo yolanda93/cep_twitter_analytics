@@ -14,8 +14,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 
 /**
- *
- * @author Yolanda de la Hoz Simon - 53826071E
+ * TwitterFilterBolt
+ * Created on Dec 22, 2015
+ * @author Yolanda de la Hoz Simon <yolanda93h@gmail.com>
  */
 public class TwitterFilterBolt extends BaseBasicBolt {
 
@@ -27,6 +28,10 @@ public class TwitterFilterBolt extends BaseBasicBolt {
         this.lang = languages;
     }
 
+    /**
+     * Method check if the given language is on the list of selected languages or not
+     * @param tweet_lang language of the tweet to be processed
+     */
     private boolean isValidLang(String tweet_lang) {
         for (int i = 0; i <= lang.length - 1; i++) {
             if (lang[i].equals(tweet_lang)) {
@@ -36,7 +41,13 @@ public class TwitterFilterBolt extends BaseBasicBolt {
         return false;
     }
 
-    public void execute(Tuple input, BasicOutputCollector collector) {
+    /**
+     * Method to filter incoming tweets
+     * @param input received tweets 
+     * @param collector used to emit the tweets
+     */
+    @SuppressWarnings("unchecked")
+	public void execute(Tuple input, BasicOutputCollector collector) {
         System.out.println("Filttering incoming tweets");
         String json = input.getString(0);
         try {
@@ -74,7 +85,11 @@ public class TwitterFilterBolt extends BaseBasicBolt {
             System.out.println("IO error while filtering tweets:" + ex.getMessage());
         }
     }
-
+    
+    /**
+     * Method to declare the output fields
+     * @param declarer declare the output fields
+     */
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         declarer.declare(new Fields("timestamp", "lang", "hashtag"));
     }

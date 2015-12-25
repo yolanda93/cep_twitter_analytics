@@ -1,12 +1,12 @@
 package master2015;
 
 import backtype.storm.spout.SpoutOutputCollector;
+
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +17,9 @@ import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 
 /**
- *
- * @author yolanda
+ * KafkaConsumer
+ * Created on Dec 22, 2015
+ * @author Yolanda de la Hoz Simón <yolanda93h@gmail.com>
  */
 public class KafkaConsumer extends BaseRichSpout {
 
@@ -30,12 +31,14 @@ public class KafkaConsumer extends BaseRichSpout {
     private static final String KAFKA_TOPIC = "twitter-topic";
 
     public KafkaConsumer(String a_zookeeper, String a_groupId) {
-        System.out.println("-------------------------");
         this.a_zookeeper = a_zookeeper;
         this.a_groupId = a_groupId;
-        System.out.println("-------------------------");
     }
 
+    /**
+     * Method to declare the output fields
+     * @param ofd tweets received
+     */
     public void declareOutputFields(OutputFieldsDeclarer ofd) {
         ofd.declare(new Fields("tweet"));
     }
@@ -47,7 +50,12 @@ public class KafkaConsumer extends BaseRichSpout {
     @Override
     public void fail(Object id) {
     }
-
+    
+    /**
+     * Method to create the neccesary configuration to consume the kafka topic
+     * @param a_zookeeper the zookeeper url
+     * @param a_groupId  the group id
+     */
     private kafka.consumer.ConsumerConfig createConsumerConfig(String a_zookeeper, String a_groupId) {
         Properties props = new Properties();
         props.put("zookeeper.connect", a_zookeeper);
@@ -58,11 +66,21 @@ public class KafkaConsumer extends BaseRichSpout {
         return new ConsumerConfig(props);
     }
 
-    public void open(Map map, TopologyContext tc, SpoutOutputCollector soc) {
+    /**
+     * Method that creates the consumer connector.
+     * @param map
+     * @param tc
+     * @param soc
+     */
+    @SuppressWarnings("rawtypes")
+	public void open(Map map, TopologyContext tc, SpoutOutputCollector soc) {
         consumer = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(a_zookeeper, a_groupId));
         this.collector = soc;
     }
 
+    /**
+     * Method that receives and emits tweets
+     */
     public void nextTuple() {
         Map<String, Integer> topicCountMap = new HashMap<String, Integer>();
         topicCountMap.put(KAFKA_TOPIC, 1);

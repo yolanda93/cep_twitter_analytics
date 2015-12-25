@@ -7,8 +7,9 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- *
- * @author Yolanda de la Hoz Simon - 53826071E
+ * SlideCounter
+ * Created on Dec 22, 2015
+ * @author Yolanda de la Hoz Simon <yolanda93h@gmail.com>
  */
 @SuppressWarnings("hiding")
 public final class SlideCounter<String> implements Serializable {

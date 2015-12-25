@@ -13,8 +13,9 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- *
- * @author Yolanda de la Hoz Simon - 53826071E
+ * OutputToFileBolt
+ * Created on Dec 22, 2015
+ * @author Yolanda de la Hoz Simon <yolanda93h@gmail.com>
  */
 public class OutputToFileBolt extends BaseRichBolt {
 
@@ -32,6 +33,10 @@ public class OutputToFileBolt extends BaseRichBolt {
 
     }
 
+    /**
+     * Method to write in files the result. File format: lang_ID.txt
+     * @param tuple (1) lang, (2) lower limit of the next window, (3) first hashtag (4) first count value, (5) second hashtag, (6) second count value,(7) third hashtag, (8) third count value  
+     */
     public void execute(Tuple tuple) {
         if (tuple.size() > 6) {
             File file = new File(file_path + "/" + tuple.getValue(0) + "_" + ID);

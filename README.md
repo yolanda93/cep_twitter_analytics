@@ -51,11 +51,11 @@ To execute this application you must have installed kafka (http://kafka.apache.o
 
 Execution example:
 
-(MODO 1) Read from file:
+(MODE 1) Read from file:
     
    ./startTwitterApp.sh "1" "../../tweetsLogFile.log" "node4:9092"
 
-(MODO 2) Read from twitter API:
+(MODE 2) Read from twitter API:
 
    ./startTwitterApp.sh "2" "FjFVvfxNkx3aqv2X0KYJKnxIP" "7IIB5CafrQIRlkHuO328KUQMgPlEjDtas3ciJYud7DdqTC0Kem" "475871668-W6d8hmIVwpjaypzxSDEmjrufRP58pJU5pKJvmNaR" "zFJUvJoOspsb39E2HcQsIQ6RfZBfYNuGGZhgQJ0gfJ9Df" "node4:9092" "../../tweetsLogFile.log" 
    

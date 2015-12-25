@@ -4,14 +4,14 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
-*
-* @author Yolanda de la Hoz Simon - 53826071E
-*/
+ * WindowCounter
+ * Created on Dec 22, 2015
+ * @author Yolanda de la Hoz Simon <yolanda93h@gmail.com>
+ */
 @SuppressWarnings("hiding")
 public final class WindowCounter<String> implements Serializable {
 
-  private static final long serialVersionUID = -2645063988768785810L;
-
+  private static final long serialVersionUID = 1L;
   private SlideCounter<String> hashtag_counter;
   private int head_slide;
   private int tail_slide;
@@ -40,7 +40,7 @@ public final class WindowCounter<String> implements Serializable {
     return (slide + 1) % window_length_slides;
   }
   
-  public Map<String, Long> getCountsSlideWindow(int n_intervals_advance) {
+  public Map<String, Long> getCountsWindowAndAdvance(int n_intervals_advance) {
 	    Map<String, Long> counts = hashtag_counter.getCounts();
 	    hashtag_counter.wipeZeros();
 	    hashtag_counter.wipeSlot(tail_slide);
