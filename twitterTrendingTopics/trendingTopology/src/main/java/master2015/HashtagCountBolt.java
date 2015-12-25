@@ -137,31 +137,14 @@ public class HashtagCountBolt extends BaseRichBolt {
   /**
   * Method that emits the current counts ordered
   * @param hashtag_counts map with the counts of each hashtag
-  * @param lang lang of the current hashtag
+  * @param lang language of the current hashtag
   */
   private void emit(Map<String, Long> hashtag_counts, String lang) {
         Set<Entry<String, Long>> set = hashtag_counts.entrySet();
         List<Entry<String, Long>> list = new ArrayList<Entry<String, Long>>(set);
-        Collections.sort(list, new Comparator<Map.Entry<String, Long>>() {
-            public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
-                return (o2.getValue()).compareTo(o1.getValue());
-            }
-        });
-        int top3 = 0;
-        String []hashtags=new String[3];
-        Long []count=new Long[3];
-        for (Map.Entry<String, Long> entry : list) {
-            hashtags[top3]=entry.getKey();
-            count[top3]=entry.getValue();
-            System.out.println(entry.getKey() + " ==== " + entry.getValue());
-            top3++;
-            if (top3 == 3) {
-            	long real_time_milisec=(long)getCurrentLowerLimit(lang)*1000;
-                collector.emit(new Values(lang,real_time_milisec,hashtags[0],count[0],hashtags[1],count[1],hashtags[2],count[2]));
-                break;
-            }         
-        }
-    }
+        System.out.println("Emitted list of window:" + getCurrentLowerLimit(lang) + "languague:" + lang );
+        collector.emit(new Values(list, getCurrentLowerLimit(lang),lang));
+  }
 
   /**
   * Method that increments the current hashtag counter
@@ -172,9 +155,13 @@ public class HashtagCountBolt extends BaseRichBolt {
     counter.get(tuple.getValue(1).toString()).incrementCount(hashtag);
   }
 
+  /**
+   * Method to declare the output fields
+   * @param declarer. Receives as tuple: (1) an array list with the counts of each hashtag, (2) lower limit of the next window and (3) the language.
+   */
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("lang","currentLowerLimit", "hashtag1", "count1","hashtag2", "count2","hashtag3", "count3"));
+    declarer.declare(new Fields("hashtag_counts","currentLowerLimit", "lang"));
   }
 
   

@@ -40,6 +40,7 @@ public class KafkaConsumer extends BaseRichSpout {
      * @param ofd tweets received
      */
     public void declareOutputFields(OutputFieldsDeclarer ofd) {
+        System.out.println("Received:");
         ofd.declare(new Fields("tweet"));
     }
 
@@ -90,7 +91,6 @@ public class KafkaConsumer extends BaseRichSpout {
   
         ConsumerIterator<byte[], byte[]> it = streams.get(0).iterator();
         while (it.hasNext()) {
-            System.out.println("Received:" + new String(it.next().message()));
 
             collector.emit( new Values(new String(it.next().message())));
         }

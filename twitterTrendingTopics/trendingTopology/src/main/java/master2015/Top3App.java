@@ -68,15 +68,15 @@ public class Top3App
 
         topology.setBolt("twitter_filter", new TwitterFilterBolt(languages), 2)
                 .fieldsGrouping("kafka_spout", new Fields("tweet"));
-
+        
         topology.setBolt("rolling-counter", new HashtagCountBolt(30, 4), 1)
-                .fieldsGrouping("twitter_filter", new Fields("hashtag", "lang"));
+               .fieldsGrouping("twitter_filter", new Fields("hashtag", "lang"));
 
-       // topology.setBolt("ranking-result", new Top3Calculator())
-         //       .fieldsGrouping("rolling-counter", new Fields("hashtag", "lang"));
+        topology.setBolt("ranking-result", new RankerBolt())
+              .fieldsGrouping("rolling-counter", new Fields("hashtag_counts", "lang"));
 
         topology.setBolt("output-result", new OutputToFileBolt(languages,folder))
-               .fieldsGrouping("rolling-counter", new Fields("lang"));
+               .fieldsGrouping("ranking-result", new Fields("lang"));
 
         return topology.createTopology();
     }
