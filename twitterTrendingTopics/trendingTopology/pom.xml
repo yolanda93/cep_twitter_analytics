@@ -25,7 +25,7 @@
 			<groupId>org.apache.storm</groupId>
 			<artifactId>storm-core</artifactId>
 			<version>0.9.4</version>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>

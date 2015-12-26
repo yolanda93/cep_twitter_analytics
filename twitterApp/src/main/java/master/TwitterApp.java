@@ -1,11 +1,11 @@
 package master;
 
 import java.io.BufferedReader;
+
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
-import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +22,6 @@ import twitter4j.json.DataObjectFactory;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Properties;
 
 /**
@@ -41,7 +39,6 @@ public class TwitterApp {
     private String consumerSecret;
     private String accessToken;
     private String accessTokenSecret;
-    private String KafkaBrokerURL;
     private String filePath;
     private Properties props;
 
@@ -60,15 +57,14 @@ public class TwitterApp {
         props.put("request.required.acks", "1");
 
         if (mode == 1) { // Reads from file
-            if (args.length>6) 
-             props.put("metadata.broker.list", args[5]); //Kafka Broker URLs 
-            else
-             props.put("metadata.broker.list", args[2]); //Kafka Broker URLs 
-            if (args.length>2) {
-                filePath = args[1]; // Filepath is provided as a second argument.
-            } else {
-                filePath = args[6]; // Filepath is provided as a sixth argument.          
+            if (args.length>5){
+              props.put("metadata.broker.list", args[5]); //Kafka Broker URLs 
+              filePath = args[6]; // Filepath is provided as a sixth argument.
+            }else{
+             props.put("metadata.broker.list", args[1]); //Kafka Broker URLs 
+             filePath = args[2]; // Filepath is provided as a second argument. 
             }
+          props.put("producer.type", "async");
         } else if (args.length < 2) {
             consumerKey = "FjFVvfxNkx3aqv2X0KYJKnxIP";
             consumerSecret = "7IIB5CafrQIRlkHuO328KUQMgPlEjDtas3ciJYud7DdqTC0Kem";
@@ -88,7 +84,8 @@ public class TwitterApp {
      * Method to read tweets for a preloaded log file in JSON format  and send tweets from kafka topic
      * @param producer Kafka producer to send by the topic twitter-topic     
      */
-    private void readFromFile(Producer<String, String> producer){
+    private void readFromFile(final ProducerConfig config){
+    	final Producer<Integer, String> producer = new Producer<>(config);
         logger.debug("Reading from file: " + filePath);
         BufferedReader rd = null;
         try {
@@ -96,10 +93,10 @@ public class TwitterApp {
                 rd = new BufferedReader(new FileReader(filePath));
                 String line = null;
 
-                while ((line = rd.readLine()) != null) {
+                while ((line = rd.readLine()) != null) {                
+                    producer.send(new KeyedMessage<Integer, String>(
+                    		KAFKA_TOPIC, line));
                     logger.debug("----------------------------->Producing messages: " +line);
-                    KeyedMessage<String, String> data = new KeyedMessage<>(KAFKA_TOPIC, DataObjectFactory.getRawJSON(line));
-                    producer.send(data);
                 }
                 logger.debug("Done sending messages");
             } catch (IOException ex) {
@@ -129,7 +126,8 @@ public class TwitterApp {
     * Method to read tweets from the twitter API and send tweets from kafka topic
     * @param producer Kafka producer to send by the topic twitter-topic     
     */
-    private void readFromTwitterApi(final Producer<String, String> producer) {
+    private void readFromTwitterApi(final ProducerConfig config) {
+        final Producer<String, String> producer = new Producer<>(config);
         logger.debug("reading from twitter api");
         // Set up twitter properties 
         ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -141,7 +139,6 @@ public class TwitterApp {
         cb.setIncludeEntitiesEnabled(true);
 
         twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
-        final Map<String, String> headers = new HashMap<>();
 
         /* Twitter listener */
         StatusListener listener;
@@ -190,12 +187,11 @@ public class TwitterApp {
     */
     private void start(int mode) {
         ProducerConfig config = new ProducerConfig(props);
-        final Producer<String, String> producer = new Producer<>(config);
 
         if (mode == 1) { // Mode = 1, reads from file 
-            readFromFile(producer);
+            readFromFile(config);
         } else { // Mode = 2, reads from twitter API
-            readFromTwitterApi(producer);
+            readFromTwitterApi(config);
 
         }
     }

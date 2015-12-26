@@ -2,10 +2,11 @@ package master2015;
 
 
 import backtype.storm.Config;
+
+
 import backtype.storm.LocalCluster;
-import backtype.storm.generated.StormTopology;
 import backtype.storm.StormSubmitter;
-import backtype.storm.spout.SchemeAsMultiScheme;
+import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import java.io.IOException;
@@ -20,7 +21,6 @@ import org.apache.log4j.Logger;
 public class Top3App
 {
     private final Logger LOGGER = Logger.getLogger(this.getClass());
-    private static final String KAFKA_TOPIC = "twitter-topic";
    
     
     public static void main(String[] args) throws Exception
@@ -42,19 +42,19 @@ public class Top3App
              window_advance=Integer.parseInt(window_params[1]);
              topology_name=args[3];
              folder=args[4];
-           /*     StormSubmitter.submitTopology(
+              StormSubmitter.submitTopology(
                 topology_name, // topology name
                 createConfig(false),
-                createTopology(languages,zookeper_url,window_size,window_advance,folder));*/
+                createTopology(languages,zookeper_url,window_size,window_advance,folder));
             
           //Test in a local cluster
-          LocalCluster cluster = new LocalCluster();
-            cluster.submitTopology(
+                /*     LocalCluster cluster = new LocalCluster();
+                cluster.submitTopology(
                 topology_name,
                 createConfig(true),
                 createTopology(languages,zookeper_url,window_size,window_advance,folder));
-            Thread.sleep(60000);
-            cluster.shutdown();
+            Thread.sleep(90000);
+            cluster.shutdown();*/
         }
         else{
          throw new IllegalArgumentException("Arguments: langList, Zookeeper URL, winParams, topologyName, Folder");
@@ -66,16 +66,16 @@ public class Top3App
        
        topology.setSpout("kafka_spout", new KafkaConsumer(zookeper_url,"kafkaSpout"), 2);
 
-        topology.setBolt("twitter_filter", new TwitterFilterBolt(languages), 2)
+       topology.setBolt("twitter_filter", new TwitterFilterBolt(languages), 2)
                 .fieldsGrouping("kafka_spout", new Fields("tweet"));
         
-        topology.setBolt("rolling-counter", new HashtagCountBolt(30, 4), 1)
-               .fieldsGrouping("twitter_filter", new Fields("hashtag", "lang"));
+       topology.setBolt("window-counter", new HashtagCountBolt(windowSize, windowAdvance))
+               .fieldsGrouping("twitter_filter", new Fields("hashtag"));
 
-        topology.setBolt("ranking-result", new RankerBolt())
-              .fieldsGrouping("rolling-counter", new Fields("hashtag_counts", "lang"));
+       topology.setBolt("ranking-result", new RankerBolt())
+             .fieldsGrouping("window-counter", new Fields("lang"));
 
-        topology.setBolt("output-result", new OutputToFileBolt(languages,folder))
+       topology.setBolt("output-result", new OutputToFileBolt(languages,folder))
                .fieldsGrouping("ranking-result", new Fields("lang"));
 
         return topology.createTopology();

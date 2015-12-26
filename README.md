@@ -13,13 +13,13 @@ The startTwitterApp.sh script is a java application that read tweets from both t
 
 Arguments:
 
-• mode: 1 means read from file, 2 read from the Twitter API.
-• apiKey: key associated with the Twitter app consumer.
-• apiSecret: secret associated with the Twitter app consumer.
-• tokenValue: access token associated with the Twitter app.
-• tokenSecret: access token secret.
-• Kafka Broker URL: String in the format IP:port corresponding with the Kafka Broker
-• Filename: path to the file with the tweets (the path is related to the filesystem of the node that will be used to run the Twitter app)
+ • mode: 1 means read from file, 2 read from the Twitter API.
+ • apiKey: key associated with the Twitter app consumer.
+ • apiSecret: secret associated with the Twitter app consumer.
+ • tokenValue: access token associated with the Twitter app.
+ • tokenSecret: access token secret.
+ • Kafka Broker URL: String in the format IP:port corresponding with the Kafka Broker
+ • Filename: path to the file with the tweets (the path is related to the filesystem of the node that will be used to run the Twitter app)
   
 
 To execute this application you must have installed kafka (http://kafka.apache.org/) and execute the following commands:
@@ -53,7 +53,7 @@ Execution example:
 
 (MODE 1) Read from file:
     
-   ./startTwitterApp.sh "1" "../../tweetsLogFile.log" "node4:9092"
+   ./startTwitterApp.sh "1" "node4:9092" "../../tweetsLogFile.log" 
 
 (MODE 2) Read from twitter API:
 
@@ -67,11 +67,11 @@ Execution example:
 ## twitterTrendingTopics
 
 
-• langList: String with the list of languages (“lang” values) we are interested in. The list is in CSV format, example: en,pl,ar,es
-• Zookeeper URL: String IP:port of the Zookeeper node.
-• winParams: String with the window parameters size and advance using the format: size,advance. The time units are seconds.
-• topologyName: String identifying the topology in the Storm Cluster.
-• Folder: path to the folder used to store the output files (the path is relative to the filesystem of the node that will be used to run the Storm Supervisor)
+ • langList: String with the list of languages (“lang” values) we are interested in. The list is in CSV format, example: en,pl,ar,es
+ • Zookeeper URL: String IP:port of the Zookeeper node.
+ • winParams: String with the window parameters size and advance using the format: size,advance. The time units are seconds.
+ • topologyName: String identifying the topology in the Storm Cluster.
+ • Folder: path to the folder used to store the output files (the path is relative to the filesystem of the node that will be used to run the Storm Supervisor)
 
 Example of execution
 
@@ -100,12 +100,12 @@ password: 7Uljjbpb4
 ssh masteruser1@138.4.110.141 -p 51005 --> twitterApp
 ssh masteruser1@138.4.110.141 -p 51004 --> kafka
 
-./kafka_2.10-0.8.2.1/bin/kafka-server-start.sh ./kafka_2.10-0.8.2.1/config/<server class="properties"></server>
+./kafka_2.10-0.8.2.1/bin/kafka-server-start.sh ./kafka_2.10-0.8.2.1/config/server.properties
 
 ./kafka-topics.sh --create --topic twitter-topic --zookeeper node2 --partitions 2 --replication-factor 1
 ./kafka-topics.sh  --describe --zookeeper node2  
 
-ssh masteruser1@138.4.110.141 -p 51002 --> storm H2	
+zssh masteruser1@138.4.110.141 -p 51002 --> storm H2	
 
 ./zookeeper-3.4.6/bin/zkServer.sh start
 ./zookeeper-3.4.6/bin/zkServer.sh stop
@@ -136,6 +136,7 @@ scp -P 51002 trendingTopology.jar masteruser1@138.4.110.141:/home/masteruser1
 3) Submit the topology to the cluster using the storm client, specifying the path to your jar, the classname to run, and any arguments it will use:
 ```
 #!bash
+mvn assembly:assembly 
 storm jar trendingTopology.jar arg1 arg2 arg3
 ```
 Example of submition the storm topology

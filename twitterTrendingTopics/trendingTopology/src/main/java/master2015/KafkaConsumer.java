@@ -40,7 +40,6 @@ public class KafkaConsumer extends BaseRichSpout {
      * @param ofd tweets received
      */
     public void declareOutputFields(OutputFieldsDeclarer ofd) {
-        System.out.println("Received:");
         ofd.declare(new Fields("tweet"));
     }
 
