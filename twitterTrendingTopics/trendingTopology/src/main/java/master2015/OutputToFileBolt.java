@@ -39,8 +39,8 @@ public class OutputToFileBolt extends BaseRichBolt {
      */
     public void execute(Tuple tuple) {
         if (tuple.size() > 6) {
-            File file = new File(file_path + "/" + tuple.getValue(0) + "_" + ID);
-            String content = tuple.getValue(1).toString() + "," + tuple.getValue(2).toString() + ","
+            File file = new File(file_path + "/" + tuple.getValue(0));
+            String content = tuple.getValue(1).toString() + "," + tuple.getValue(0) + "," + tuple.getValue(2).toString() + ","
                     + tuple.getValue(3).toString() + "," + tuple.getValue(4).toString() + ","
                     + tuple.getValue(5).toString() + "," + tuple.getValue(6).toString() + ","
                     + tuple.getValue(7).toString();

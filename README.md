@@ -105,7 +105,22 @@ ssh masteruser1@138.4.110.141 -p 51004 --> kafka
 ./kafka-topics.sh --create --topic twitter-topic --zookeeper node2 --partitions 2 --replication-factor 1
 ./kafka-topics.sh  --describe --zookeeper node2  
 
-zssh masteruser1@138.4.110.141 -p 51002 --> storm H2	
+ 
+
+Add below line in ${kafka_home}/config/server.properties
+
+delete.topic.enable=true
+
+Restart the kafka server with new config:
+
+${kafka_home}/bin/kafka-server-start.sh ~/kafka/config/server.properties
+
+Delete the topics you wish to:
+
+${kafka_home}/bin/kafka-topics.sh --delete  --zookeeper localhost:2181  --topic daemon12
+
+
+ssh masteruser1@138.4.110.141 -p 51002 --> storm H2	
 
 ./zookeeper-3.4.6/bin/zkServer.sh start
 ./zookeeper-3.4.6/bin/zkServer.sh stop

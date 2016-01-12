@@ -35,7 +35,7 @@ public class RankerBolt extends BaseRichBolt {
     
     
     private void emitTop3(List<Entry<String, Long>> list, String lang,int lowerlimit){
-        int top3 = 0;
+    	int top3 = 0;
         String []hashtags=new String[3];
         Long []count=new Long[3];
         for (Map.Entry<String, Long> entry : list) {

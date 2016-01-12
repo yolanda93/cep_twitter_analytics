@@ -42,19 +42,19 @@ public class Top3App
              window_advance=Integer.parseInt(window_params[1]);
              topology_name=args[3];
              folder=args[4];
-              StormSubmitter.submitTopology(
+           /*   StormSubmitter.submitTopology(
                 topology_name, // topology name
                 createConfig(false),
-                createTopology(languages,zookeper_url,window_size,window_advance,folder));
+                createTopology(languages,zookeper_url,window_size,window_advance,folder));*/
             
           //Test in a local cluster
-                /*     LocalCluster cluster = new LocalCluster();
+                LocalCluster cluster = new LocalCluster();
                 cluster.submitTopology(
                 topology_name,
                 createConfig(true),
                 createTopology(languages,zookeper_url,window_size,window_advance,folder));
             Thread.sleep(90000);
-            cluster.shutdown();*/
+            cluster.shutdown();
         }
         else{
          throw new IllegalArgumentException("Arguments: langList, Zookeeper URL, winParams, topologyName, Folder");
