@@ -41,7 +41,7 @@ public class RankerBolt extends BaseRichBolt {
         for (Map.Entry<String, Long> entry : list) {
             hashtags[top3]=entry.getKey();
             count[top3]=entry.getValue();
-            System.out.println(lang + entry.getKey() + " ==== " + entry.getValue());
+           // System.out.println(lang + entry.getKey() + " ==== " + entry.getValue());
             top3++;
             if (top3 == 3) {
             	long real_time_milisec=(long)lowerlimit*1000;
@@ -55,8 +55,7 @@ public class RankerBolt extends BaseRichBolt {
      * Method to order a given array list to get the top 3 twitter topics
      * @param tuple. Receives as tuple: (1) an array list with the counts of each hashtag, (2) lower limit of the next window and (3) the language.
      */
-    @SuppressWarnings("unchecked")
-	public void execute(Tuple tuple) {
+    public void execute(Tuple tuple) {
         List<Entry<String, Long>> list;
     	if(tuple.size()>2){
          list= (List<Entry<String, Long>>) tuple.getValue(0);  	

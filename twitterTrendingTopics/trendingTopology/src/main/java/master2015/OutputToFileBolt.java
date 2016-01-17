@@ -29,7 +29,7 @@ public class OutputToFileBolt extends BaseRichBolt {
         file_path = folder;
     }
 
-    public void prepare(@SuppressWarnings("rawtypes") Map map, TopologyContext tc, OutputCollector oc) {
+    public void prepare(Map map, TopologyContext tc, OutputCollector oc) {
 
     }
 
@@ -39,7 +39,7 @@ public class OutputToFileBolt extends BaseRichBolt {
      */
     public void execute(Tuple tuple) {
         if (tuple.size() > 6) {
-            File file = new File(file_path + "/" + tuple.getValue(0));
+            File file = new File(file_path + "/" + tuple.getValue(0) + "_" + ID + ".log");
             String content = tuple.getValue(1).toString() + "," + tuple.getValue(0) + "," + tuple.getValue(2).toString() + ","
                     + tuple.getValue(3).toString() + "," + tuple.getValue(4).toString() + ","
                     + tuple.getValue(5).toString() + "," + tuple.getValue(6).toString() + ","
@@ -58,7 +58,7 @@ public class OutputToFileBolt extends BaseRichBolt {
                 System.out.println(ex.getMessage());
             }
 
-            System.out.println("Done");
+           // System.out.println("Done");
         }
     }
 

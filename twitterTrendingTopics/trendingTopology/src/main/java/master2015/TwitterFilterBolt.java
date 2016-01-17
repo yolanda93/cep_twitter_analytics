@@ -46,7 +46,6 @@ public class TwitterFilterBolt extends BaseBasicBolt {
      * @param input received tweets 
      * @param collector used to emit the tweets
      */
-    @SuppressWarnings("unchecked")
 	public void execute(Tuple input, BasicOutputCollector collector) {
         System.out.println("Filttering incoming tweets");
         String json = input.getString(0);
@@ -67,8 +66,8 @@ public class TwitterFilterBolt extends BaseBasicBolt {
                             for (int i = 0; i < hashtags_list.size(); i++) {
                                 String[] firstPart = hashtags_list.toArray()[i].toString().split("=");
                                 hashtag = firstPart[1].split(",");
-                                System.out.println("--------------> Emiting tweet with hashtag: " + hashtag[0]);
-                                System.out.println("--------------> Emiting tweet with lang: " + tweet_lang);
+                                //System.out.println("--------------> Emiting tweet with hashtag: " + hashtag[0]);
+                                //System.out.println("--------------> Emiting tweet with lang: " + tweet_lang);
                                 collector.emit(new Values(timestamp, tweet_lang, hashtag[0]));
                             }
                         }

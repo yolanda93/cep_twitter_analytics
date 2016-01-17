@@ -7,7 +7,11 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.tuple.Tuple;
+
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +58,7 @@ public class HashtagCountBolt extends BaseRichBolt {
   * @param timestamp hashtag timestamp used to calculate the current time interval window. It will be the initial interval window.      
   */
   private int calculateInitialInterval(long timestamp) {
-    System.out.println("The initial interval is: " + this.advance_window / timestamp);
+    //System.out.println("The initial interval is: " + this.advance_window / timestamp);
     return (int) (timestamp / this.advance_window);
   }
 
@@ -87,9 +91,9 @@ public class HashtagCountBolt extends BaseRichBolt {
  * @param timestamp timestamp of the current hashtag
  */
   private boolean isAdvanceTimeReached(String lang,long timestamp) {
-      System.out.println("LOWER LIMIT: "+ (getCurrentLowerLimit(lang)));
-      System.out.println("TIMESTAMP: "+ timestamp);
-      System.out.println("TO REACH THE LIMIT: "+ (timestamp-getCurrentLowerLimit(lang)));
+     // System.out.println("LOWER LIMIT: "+ (getCurrentLowerLimit(lang)));
+     // System.out.println("TIMESTAMP: "+ timestamp);
+     // System.out.println("TO REACH THE LIMIT: "+ (timestamp-getCurrentLowerLimit(lang)));
       return timestamp-getCurrentLowerLimit(lang)>=advance_window;
   }
   
@@ -98,7 +102,7 @@ public class HashtagCountBolt extends BaseRichBolt {
    * @param timestamp language as identifier
    */
    private long milisecondToSeconds(Long timestamp) {
-    System.out.println("TIMESTAMP 1: "+ timestamp);
+   //System.out.println("TIMESTAMP 1: "+ timestamp);
     return (long) (timestamp / 1000); 
   }
    
@@ -107,12 +111,12 @@ public class HashtagCountBolt extends BaseRichBolt {
         if (tuple.size() > 2) {
             String lang = (String) tuple.getValue(1);
             long timestamp = milisecondToSeconds(Long.valueOf(tuple.getString(0)));
-            System.out.println("------------> NEW TIMESTAMP: "+ timestamp);
+            //System.out.println("------------> NEW TIMESTAMP: "+ timestamp);
             createNewTimeIntervalWindow(lang,timestamp);
             if (!isAdvanceTimeReached(lang,timestamp)) {
                 addCounterHashtag(tuple);
             } else {
-                System.out.println("----------->Advance time reached");
+                //System.out.println("----------->Advance time reached");
                 emitCurrentCounts(lang,timestamp);
                 addCounterHashtag(tuple);
             }
@@ -127,22 +131,58 @@ public class HashtagCountBolt extends BaseRichBolt {
   */
   private void emitCurrentCounts(String lang, long timestamp) { 
     int n_intervals_advance = calculateInitialInterval(timestamp-getCurrentLowerLimit(lang));
-    System.out.println("Advance intervals" + n_intervals_advance);
+   // System.out.println("Advance intervals" + n_intervals_advance);
     Map<String, Long> counts = counter.get(lang).getCountsWindowAndAdvance(n_intervals_advance);
     emit(counts,lang);
   }
   
+  
   /**
   * Method that emits the current counts ordered
   * @param hashtag_counts map with the counts of each hashtag
-  * @param lang language of the current hashtag
+  * @param lang lang of the current hashtag
   */
   private void emit(Map<String, Long> hashtag_counts, String lang) {
         Set<Entry<String, Long>> set = hashtag_counts.entrySet();
         List<Entry<String, Long>> list = new ArrayList<Entry<String, Long>>(set);
-        System.out.println("Emitted list of window:" + getCurrentLowerLimit(lang) + "languague:" + lang );
-        collector.emit(new Values(list, getCurrentLowerLimit(lang),lang));
-  }
+
+        // lexicographically order
+        Collections.sort(list, new Comparator<Map.Entry<String, Long>>() {
+            Collator c = Collator.getInstance();
+            public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
+            	if(c.compare(o2.getKey(), o1.getKey())==-1)
+            		return 1;
+            	else if(c.compare(o2.getKey(), o1.getKey())==1)
+            		return -1;
+            	else
+            	    return 0;
+            }
+        });
+        
+        Collections.sort(list, new Comparator<Map.Entry<String, Long>>() {
+            public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {            	
+            	return (o2.getValue()).compareTo(o1.getValue());
+            }
+        });
+        
+   
+        
+        int top3 = 0;
+        String []hashtags=new String[3];
+        Long []count=new Long[3];
+        for (Map.Entry<String, Long> entry : list) {
+            hashtags[top3]=entry.getKey();
+            count[top3]=entry.getValue();
+           //System.out.println(entry.getKey() + " ==== " + entry.getValue());
+            top3++;
+            if (top3 == 3) {
+            	
+            	long real_time_milisec=(long)getCurrentLowerLimit(lang)*1000;
+                collector.emit(new Values(lang,real_time_milisec,hashtags[0],count[0],hashtags[1],count[1],hashtags[2],count[2]));
+                break;
+            }         
+        }
+    }
 
   /**
   * Method that increments the current hashtag counter
@@ -153,13 +193,9 @@ public class HashtagCountBolt extends BaseRichBolt {
     counter.get(tuple.getValue(1).toString()).incrementCount(hashtag);
   }
 
-  /**
-   * Method to declare the output fields
-   * @param declarer. Receives as tuple: (1) an array list with the counts of each hashtag, (2) lower limit of the next window and (3) the language.
-   */
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("hashtag_counts","currentLowerLimit", "lang"));
+    declarer.declare(new Fields("lang","currentLowerLimit", "hashtag1", "count1","hashtag2", "count2","hashtag3", "count3"));
   }
 
   

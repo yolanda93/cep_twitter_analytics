@@ -90,7 +90,7 @@ Example of execution
 
 your group ID is 10
 members: Yolanda De la Hoz Simon
-Storm UI url: http://138.4.110.141:41002
+Storm UI url:   http://138.4.110.141:41002
 
 ```
 #!bash
@@ -127,7 +127,7 @@ ssh masteruser1@138.4.110.141 -p 51002 --> storm H2
 
 Nimbus: ./apache-storm-0.10.0/bin/storm nimbus
 UI: ./apache-storm-0.10.0/bin/storm ui
-Supervisor: ./apache-storm-0.10.0/bin/storm supervisor
+Supervisor: ./apache-storm-0.10.0/bin/storm Supervisor
 
 ssh masteruser1@138.4.110.141 -p 51003 --> storm H3
 
@@ -145,7 +145,7 @@ scp -P 51005 -r appassembler masteruser1@138.4.110.141:/home/masteruser1
 scp -P 51005 tweetsLogFile.log masteruser1@138.4.110.141:/home/masteruser1
 
 scp -P 51002 trendingTopology.jar masteruser1@138.4.110.141:/home/masteruser1
-
+  
 ```
 
 3) Submit the topology to the cluster using the storm client, specifying the path to your jar, the classname to run, and any arguments it will use:

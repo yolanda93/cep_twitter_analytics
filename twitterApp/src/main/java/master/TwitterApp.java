@@ -96,9 +96,9 @@ public class TwitterApp {
                 while ((line = rd.readLine()) != null) {                
                     producer.send(new KeyedMessage<Integer, String>(
                     		KAFKA_TOPIC, line));
-                    logger.debug("----------------------------->Producing messages: " +line);
+                   // logger.debug("----------------------------->Producing messages: " +line);
                 }
-                logger.debug("Done sending messages");
+               // logger.debug("Done sending messages");
             } catch (IOException ex) {
                 logger.error("IO Error while producing messages", ex);
                 logger.trace(null, ex);
@@ -146,7 +146,7 @@ public class TwitterApp {
             @Override
             // The onStatus method is executed every time a new tweet comes in.
             public void onStatus(Status status) {
-                logger.info(status.getUser().getScreenName() + ": " + status.getText());
+                //logger.info(status.getUser().getScreenName() + ": " + status.getText());
 
                 KeyedMessage<String, String> data = new KeyedMessage<>(KAFKA_TOPIC, DataObjectFactory.getRawJSON(status));
                 producer.send(data);

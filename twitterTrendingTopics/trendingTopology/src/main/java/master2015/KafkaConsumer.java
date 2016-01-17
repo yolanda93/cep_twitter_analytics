@@ -43,11 +43,10 @@ public class KafkaConsumer extends BaseRichSpout {
         ofd.declare(new Fields("tweet"));
     }
 
-    @Override
     public void ack(Object id) {
     }
 
-    @Override
+
     public void fail(Object id) {
     }
     
@@ -72,7 +71,6 @@ public class KafkaConsumer extends BaseRichSpout {
      * @param tc
      * @param soc
      */
-    @SuppressWarnings("rawtypes")
 	public void open(Map map, TopologyContext tc, SpoutOutputCollector soc) {
         consumer = kafka.consumer.Consumer.createJavaConsumerConnector(createConsumerConfig(a_zookeeper, a_groupId));
         this.collector = soc;

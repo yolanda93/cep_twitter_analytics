@@ -1,6 +1,7 @@
 package master2015;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -11,11 +12,10 @@ import java.util.TreeMap;
  * Created on Dec 22, 2015
  * @author Yolanda de la Hoz Simon <yolanda93h@gmail.com>
  */
-@SuppressWarnings("hiding")
 public final class SlideCounter<String> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private final Map<String, long[]> hashtag_counter = new TreeMap<String, long[]>();
+	private final Map<String, long[]> hashtag_counter = new HashMap<String, long[]>();
 	private final int num_slides;
 
 	public SlideCounter(int n_slides) {
@@ -41,7 +41,7 @@ public final class SlideCounter<String> implements Serializable {
 	}
 
 	public Map<String, Long> getCounts() {
-		Map<String, Long> result = new TreeMap<String, Long>();
+		Map<String, Long> result = new HashMap<String, Long>();
 		for (String obj : hashtag_counter.keySet()) {
 			result.put(obj, getTotalCount(obj));
 		}

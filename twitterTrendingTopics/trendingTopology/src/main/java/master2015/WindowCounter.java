@@ -8,7 +8,6 @@ import java.util.Map;
  * Created on Dec 22, 2015
  * @author Yolanda de la Hoz Simon <yolanda93h@gmail.com>
  */
-@SuppressWarnings("hiding")
 public final class WindowCounter<String> implements Serializable {
 
   private static final long serialVersionUID = 1L;
