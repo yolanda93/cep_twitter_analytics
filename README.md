@@ -135,7 +135,7 @@ scp -P 51002 trendingTopology.jar masteruser1@138.4.110.141:/home/masteruser1
 mvn assembly:assembly 
 storm jar trendingTopology.jar arg1 arg2 arg3
 ```
-Example of submition the storm topology
+Submition example of the storm topology
 ```
 #!bash
 storm jar trendingTopology-1.0-SNAPSHOT-jar-with-dependencies.jar master2015.Top3App "es,en,pl,ar" "node2:2181" "60,30" "trending-topologya" "/home/masteruser1"
