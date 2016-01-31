@@ -13,13 +13,13 @@ The startTwitterApp.sh script is a java application that read tweets from both t
 
 Arguments:
 
- • mode: 1 means read from file, 2 read from the Twitter API.
- • apiKey: key associated with the Twitter app consumer.
- • apiSecret: secret associated with the Twitter app consumer.
- • tokenValue: access token associated with the Twitter app.
- • tokenSecret: access token secret.
- • Kafka Broker URL: String in the format IP:port corresponding with the Kafka Broker
- • Filename: path to the file with the tweets (the path is related to the filesystem of the node that will be used to run the Twitter app)
+ * mode: 1 means read from file, 2 read from the Twitter API.
+ * apiKey: key associated with the Twitter app consumer.
+ * apiSecret: secret associated with the Twitter app consumer.
+ * tokenValue: access token associated with the Twitter app.
+ * tokenSecret: access token secret.
+ * Kafka Broker URL: String in the format IP:port corresponding with the Kafka Broker
+ * Filename: path to the file with the tweets (the path is related to the filesystem of the node that will be used to run the Twitter app)
   
 
 To execute this application you must have installed kafka (http://kafka.apache.org/) and execute the following commands:
@@ -67,11 +67,11 @@ Execution example:
 ## twitterTrendingTopics
 
 
- • langList: String with the list of languages (“lang” values) we are interested in. The list is in CSV format, example: en,pl,ar,es
- • Zookeeper URL: String IP:port of the Zookeeper node.
- • winParams: String with the window parameters size and advance using the format: size,advance. The time units are seconds.
- • topologyName: String identifying the topology in the Storm Cluster.
- • Folder: path to the folder used to store the output files (the path is relative to the filesystem of the node that will be used to run the Storm Supervisor)
+ * langList: String with the list of languages (“lang” values) we are interested in. The list is in CSV format, example: en,pl,ar,es
+ * Zookeeper URL: String IP:port of the Zookeeper node.
+ * winParams: String with the window parameters size and advance using the format: size,advance. The time units are seconds.
+ * topologyName: String identifying the topology in the Storm Cluster.
+ * Folder: path to the folder used to store the output files (the path is relative to the filesystem of the node that will be used to run the Storm Supervisor)
 
 Example of execution
 
@@ -88,14 +88,10 @@ Example of execution
 
 1) Connection to the cluster 
 
-your group ID is 10
-members: Yolanda De la Hoz Simon
 Storm UI url: http://138.4.110.141:41002
 
 ```
 #!bash
-username: masteruser1
-password: 7Uljjbpb4
 
 ssh masteruser1@138.4.110.141 -p 51005 --> twitterApp
 ssh masteruser1@138.4.110.141 -p 51004 --> kafka
