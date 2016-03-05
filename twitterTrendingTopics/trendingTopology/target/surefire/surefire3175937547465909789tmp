@@ -1,6 +1,0 @@
-#surefire
-#Mon Dec 21 16:55:23 CET 2015
-maven.ext.class.path=/home/yolanda/netbeans-8.1/java/maven-nblib/netbeans-eventspy.jar
-user.dir=/home/yolanda/NetBeansProjects/trendingTopology
-localRepository=/home/yolanda/.m2/repository
-basedir=/home/yolanda/NetBeansProjects/trendingTopology
