@@ -1,4 +1,4 @@
-package master2015;
+package stormTopology;
 
 import java.io.IOException;
 import java.util.Map;

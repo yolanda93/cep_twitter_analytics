@@ -1,4 +1,4 @@
-package master2015;
+package stormTopology;
 
 
 import backtype.storm.Config;
