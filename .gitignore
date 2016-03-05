@@ -1,9 +1,0 @@
-target/
-twitterTrendingTopics/trendingTopology/target/
-twitterTrendingTopics/.*
-twitterApp/target/
-
-twitterTrendingTopics/trendingTopology/.*
-twitterApp/.*
-twitterApp/nb*		
-twitterTrendingTopics/trendingTopology/nb*	
