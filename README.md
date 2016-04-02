@@ -28,39 +28,39 @@ First, it is needed to start kafka and zookeper servers
 ------------ Start kafka -----------------------------------------------------------------------
 	
      1. Start Zookeeper server in Kafka using following script in your kafka installation folder  
+
 ```
-#!bash
      ./bin/zookeeper-server-start.sh config/zookeeper.properties &
 ```
      2. Start Kafka server using following script 
+
 ```
-#!bash
      ./bin/kafka-server-start.sh config/server.properties  &	
 ```
 ----------  Verify the Topic and Messages -------------------------------------------------------
 
     1. Check if topic is there using 
+
 ```
-#!bash    
     $./kafka-topics.sh --list --zookeeper localhost:2181
 ```
     2. Consume messages on topic twitter-topic to verify the incoming message stream.
+
 ```
-#!bash      
     $	bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic twitter-topic --from-beginning
 ```
 Once you have adquired the key and secret associated with your twitter account (It is explained in further details in the blog provided at the end of this file), an example of execution could be:
 
 (MODE 1) In order to read from file (mode 1) The following arguments are required: 
           ./startTwitterApp.sh mode kafkaBrokerURL  filenameLogsPath
- ```
-#!bash  
+
+```
    ./startTwitterApp.sh "1" "node4:9092" "../../tweetsLogFile.log" 
 ```
 (MODE 2) In order to read from twitter API (mode 2) The following arguments are required:
           ./startTwitterApp.sh mode apiKey apiSecret tokenValue tokenSecret KafkaBrokerURL
- ```
-#!bash  
+
+```
    ./startTwitterApp.sh "2" "FjFVvfxNkx3aqv2X0xIP" "7IIB5CafrQIRlkHuO3283ciJYud7DdqTC0Kem" "475871668-W6d8hmIVwpjaypzxSDEmjrufRP5mNaR" "zFJUvJoOspsb39E2fZBfYNuGGZhgQJ0gfJ9Df" "node4:9092" 
 ```   
 
@@ -85,7 +85,6 @@ This script file has the following arguments associated:
 Once you have installed Storm and configurated the environment (It is explained in further details in the blog provided at the end of this file), an example of execution  in a local environment could be:
 
 ```
-#!bash
    java -jar trendingTopology.jar "es,en,pl,ar" "localhost:2181" "60,30" "trending-topology" "/home/yolanda"
 ```
 
@@ -98,8 +97,6 @@ First it is needed to access the cluster and start the necessary instances assoc
 
 
 ```
-#!bash
-
 ssh masteruser1@138.4.110.141 -p 51005 --> twitterApp
 ssh masteruser1@138.4.110.141 -p 51004 --> kafka
 
@@ -122,7 +119,7 @@ ssh masteruser1@138.4.110.141 -p 51003 --> storm H3
 Supervisor: ./apache-storm-0.10.0/bin/storm supervisor
 
 ```
-The Storm UI has friendly user interface to monitor the performance of each process and control the execution of each thread:
+The Storm UI has a friendly user interface to monitor the performance of each process and control the execution of each thread:
 
 ![Alt text] (https://theredqueeneffectblog.files.wordpress.com/2016/04/storm_ui1.png?w=1108 "Storm UI")
 
@@ -131,7 +128,6 @@ URL: http://138.4.110.141:41002
 2) Compile the project locally and copy files to the cluster:
 
 ```
-#!bash
 mvn clean compile package appassembler:assemble
 
 scp -P 51005 -r appassembler masteruser1@138.4.110.141:/home/masteruser1
@@ -141,14 +137,15 @@ scp -P 51002 trendingTopology.jar masteruser1@138.4.110.141:/home/masteruser1
 ```
 
 3) Submit the topology to the cluster using the storm client, specifying the path to your jar, the classname to run, and any arguments it will use:
+
 ```
-#!bash
 mvn assembly:assembly 
 storm jar trendingTopology.jar arg1 arg2 arg3
 ```
+
 Submition example of the storm topology
+
 ```
-#!bash
 storm jar trendingTopology-1.0-SNAPSHOT-jar-with-dependencies.jar master2015.Top3App "es,en,pl,ar" "node2:2181" "60,30" "trending-topologya" "/home/masteruser1"
 ```
 ## Contact information
