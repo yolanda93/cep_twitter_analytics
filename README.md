@@ -2,70 +2,80 @@
    
 This application is an example of how to scalably process any big data stream with Storm and Kafka. 
 
-The aim of this project is to have an application that performs the trending topics in Twitter for a given period of time and frecuency. For this purpose, it is used sliding window analysis algorithm, which is one of the most common algorithms in complex event processing.
+The aim of this project is to have an application that performs the trending topics in Twitter for a given period of time and frecuency. For this purpose, it is used sliding window analysis algorithm which is one of the most common algorithms in complex event processing.
 
 ## twitterApp
 
-The startTwitterApp.sh script is a java application that read tweets from both the Twitter Streaming API (MODE 2) and preloaded log file (MODE 1). This application uses Apache Kafka to store the tweets and send them through a topic "twitter-topic" with a storm bolt as a consumer of this topic. 
-
+The startTwitterApp.sh script is a java application that reads tweets from both the Twitter Streaming API (MODE 2) and a preloaded log file (MODE 1). This application uses Apache Kafka to store the tweets and send them through a topic "twitter-topic" with a storm bolt as a consumer of this topic. 
 
 ### Usage:
 
-Arguments:
+This script file has the following arguments associated:
 
- * mode: 1 means read from file, 2 read from the Twitter API.
+ * mode: 1 means read from file, 2 means read from the Twitter API.
  * apiKey: key associated with the Twitter app consumer.
  * apiSecret: secret associated with the Twitter app consumer.
  * tokenValue: access token associated with the Twitter app.
  * tokenSecret: access token secret.
  * Kafka Broker URL: String in the format IP:port corresponding with the Kafka Broker
- * Filename: path to the file with the tweets (the path is related to the filesystem of the node that will be used to run the Twitter app)
+ * filenameLogsPath: path to the file with the tweets (the path is related to the filesystem of the node that will be used to run the Twitter app)
   
 
 To execute this application you must have installed kafka (http://kafka.apache.org/) and execute the following commands:
 
+First, it is needed to start kafka and zookeper servers 
 
-```
-#!bash
     ------------ Start kafka -----------------------------------------------------------------------
 	
      1. Start Zookeeper server in Kafka using following script in your kafka installation folder  
-
+```
+#!bash
      ./bin/zookeeper-server-start.sh config/zookeeper.properties &
-
+```
      2. Start Kafka server using following script 
-
+```
+#!bash
      ./bin/kafka-server-start.sh config/server.properties  &	
-
+```
 
     ----------  Verify the Topic and Messages -------------------------------------------------------
 
     1. Check if topic is there using 
-    
+```
+#!bash    
     $./kafka-topics.sh --list --zookeeper localhost:2181
-
+```
     2. Consume messages on topic twitter-topic to verify the incoming message stream.
-    
+```
+#!bash      
     $	bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic twitter-topic --from-beginning
-
-
-Execution example:
-
-(MODE 1) Read from file:
-    
-   ./startTwitterApp.sh "1" "node4:9092" "../../tweetsLogFile.log" 
-
-(MODE 2) Read from twitter API:
-
-   ./startTwitterApp.sh "2" "FjFVvfxNkx3aqv2X0KYJKnxIP" "7IIB5CafrQIRlkHuO328KUQMgPlEjDtas3ciJYud7DdqTC0Kem" "475871668-W6d8hmIVwpjaypzxSDEmjrufRP58pJU5pKJvmNaR" "zFJUvJoOspsb39E2HcQsIQ6RfZBfYNuGGZhgQJ0gfJ9Df" "node4:9092" "../../tweetsLogFile.log" 
-   
-   -------Test Local-------
-   "2" "FjFVvfxNkx3aqv2X0KYJKnxIP" "7IIB5CafrQIRlkHuO328KUQMgPlEjDtas3ciJYud7DdqTC0Kem" "475871668-W6d8hmIVwpjaypzxSDEmjrufRP58pJU5pKJvmNaR" "zFJUvJoOspsb39E2HcQsIQ6RfZBfYNuGGZhgQJ0gfJ9Df" "node4:9092" "../../tweetsLogFile.log"
-
 ```
 
-## twitterTrendingTopics
+Once you have adquired the key and secret associated with your twitter account (It is explained in further details in the blog provided at the end of this file), an example of execution could be:
 
+(MODE 1) In order to read from file (mode 1) The following arguments are required: 
+          ./startTwitterApp.sh mode kafkaBrokerURL  filenameLogsPath
+ ```
+#!bash  
+   ./startTwitterApp.sh "1" "node4:9092" "../../tweetsLogFile.log" 
+```
+(MODE 2) In order to read from twitter API (mode 2) The following arguments are required:
+          ./startTwitterApp.sh mode apiKey apiSecret tokenValue tokenSecret KafkaBrokerURL
+ ```
+#!bash  
+   ./startTwitterApp.sh "2" "FjFVvfxNkx3aqv2X0xIP" "7IIB5CafrQIRlkHuO3283ciJYud7DdqTC0Kem" "475871668-W6d8hmIVwpjaypzxSDEmjrufRP5mNaR" "zFJUvJoOspsb39E2fZBfYNuGGZhgQJ0gfJ9Df" "node4:9092" 
+```   
+
+
+## twitterTrendingTopics.jar
+
+The twitterTrendingTopics.jar has implemented the topology needed to process twitter topics using the Storm API (http://storm.apache.org/index.html)
+
+![Alt text] (https://theredqueeneffectblog.files.wordpress.com/2015/12/captura-de-pantalla-de-2015-12-08-1931461.png?w=1108 "Storm Topology")
+
+### Usage: 
+
+This script file has the following arguments associated:
 
  * langList: String with the list of languages (“lang” values) we are interested in. The list is in CSV format, example: en,pl,ar,es
  * Zookeeper URL: String IP:port of the Zookeeper node.
@@ -73,22 +83,21 @@ Execution example:
  * topologyName: String identifying the topology in the Storm Cluster.
  * Folder: path to the folder used to store the output files (the path is relative to the filesystem of the node that will be used to run the Storm Supervisor)
 
-Example of execution
 
+Once you have installed Storm and configurated the environment (It is explained in further details in the blog provided at the end of this file), an example of execution  in a local environment could be:
 
 ```
 #!bash
-
    java -jar trendingTopology.jar "es,en,pl,ar" "localhost:2181" "60,30" "trending-topology" "/home/yolanda"
-
 ```
 
 
-## Example of execution on a cluster
+## To ilustrate an execution of this topology in a cluster mode, it is provided the example below:
 
 1) Connection to the cluster 
 
-Storm UI url: http://138.4.110.141:41002
+First it is needed to access the cluster and start the necessary instances associated to this project:
+
 
 ```
 #!bash
@@ -115,6 +124,12 @@ ssh masteruser1@138.4.110.141 -p 51003 --> storm H3
 Supervisor: ./apache-storm-0.10.0/bin/storm supervisor
 
 ```
+The Storm UI has friendly user interface to monitor the performance of each process and control the execution of each thread:
+
+
+
+
+URL: http://138.4.110.141:41002
 
 2) Compile the project locally and copy files to the cluster:
 
@@ -143,3 +158,7 @@ storm jar trendingTopology-1.0-SNAPSHOT-jar-with-dependencies.jar master2015.Top
 ## Contact information
 
 Yolanda de la Hoz Simón. yolanda93h@gmail.com
+
+## Blog explaining the basics of the API's used in this project
+
+[1] https://theredqueeneffectblog.wordpress.com/2016/04/02/twitter-real-time-data-analysis/
