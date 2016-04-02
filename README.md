@@ -25,7 +25,7 @@ To execute this application you must have installed kafka (http://kafka.apache.o
 
 First, it is needed to start kafka and zookeper servers 
 
-    ------------ Start kafka -----------------------------------------------------------------------
+------------ Start kafka -----------------------------------------------------------------------
 	
      1. Start Zookeeper server in Kafka using following script in your kafka installation folder  
 ```
@@ -37,8 +37,7 @@ First, it is needed to start kafka and zookeper servers
 #!bash
      ./bin/kafka-server-start.sh config/server.properties  &	
 ```
-
-    ----------  Verify the Topic and Messages -------------------------------------------------------
+----------  Verify the Topic and Messages -------------------------------------------------------
 
     1. Check if topic is there using 
 ```
@@ -50,7 +49,6 @@ First, it is needed to start kafka and zookeper servers
 #!bash      
     $	bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic twitter-topic --from-beginning
 ```
-
 Once you have adquired the key and secret associated with your twitter account (It is explained in further details in the blog provided at the end of this file), an example of execution could be:
 
 (MODE 1) In order to read from file (mode 1) The following arguments are required: 
@@ -126,8 +124,7 @@ Supervisor: ./apache-storm-0.10.0/bin/storm supervisor
 ```
 The Storm UI has friendly user interface to monitor the performance of each process and control the execution of each thread:
 
-
-
+![Alt text] (https://theredqueeneffectblog.files.wordpress.com/2016/04/storm_ui1.png?w=1108 "Storm UI")
 
 URL: http://138.4.110.141:41002
 
@@ -141,7 +138,6 @@ scp -P 51005 -r appassembler masteruser1@138.4.110.141:/home/masteruser1
 scp -P 51005 tweetsLogFile.log masteruser1@138.4.110.141:/home/masteruser1
 
 scp -P 51002 trendingTopology.jar masteruser1@138.4.110.141:/home/masteruser1
-
 ```
 
 3) Submit the topology to the cluster using the storm client, specifying the path to your jar, the classname to run, and any arguments it will use:
@@ -159,6 +155,6 @@ storm jar trendingTopology-1.0-SNAPSHOT-jar-with-dependencies.jar master2015.Top
 
 Yolanda de la Hoz Simón. yolanda93h@gmail.com
 
-## Blog explaining the basics of the API's used in this project
+## Blog explaining the basics steps to develop this project
 
 [1] https://theredqueeneffectblog.wordpress.com/2016/04/02/twitter-real-time-data-analysis/
