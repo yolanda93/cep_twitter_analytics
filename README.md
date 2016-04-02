@@ -6,9 +6,12 @@ The aim of this project is to have an application that performs the trending top
 
 ## Index 
 
-* twitterApp 
+* twitterApp.sh
   * Usage
-
+* twitterTrendingTopics.jar
+  * Usage
+* Contact information
+* Blog explaining the basics steps to develop this project
 
 ## twitterApp
 
@@ -77,7 +80,7 @@ The twitterTrendingTopics.jar has implemented the topology needed to process twi
 
 ![Alt text] (https://theredqueeneffectblog.files.wordpress.com/2015/12/captura-de-pantalla-de-2015-12-08-1931461.png?w=1108 "Storm Topology")
 
-### Usage: 
+### Usage
 
 This script file has the following arguments associated:
 
