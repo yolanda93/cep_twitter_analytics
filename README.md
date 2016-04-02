@@ -32,19 +32,19 @@ First, it is needed to start kafka and zookeper servers
 ```
      ./bin/zookeeper-server-start.sh config/zookeeper.properties &
 ```
-#### 2. Start Kafka server using following script 
+###### 2. Start Kafka server using following script 
 
 ```
      ./bin/kafka-server-start.sh config/server.properties  &	
 ```
 ----------  Verify the Topic and Messages -------------------------------------------------------
 
-    1. Check if topic is there using 
+###### 1. Check if topic is there using 
 
 ```
     $./kafka-topics.sh --list --zookeeper localhost:2181
 ```
-    2. Consume messages on topic twitter-topic to verify the incoming message stream.
+###### 2. Consume messages on topic twitter-topic to verify the incoming message stream.
 
 ```
     $	bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic twitter-topic --from-beginning
@@ -91,7 +91,7 @@ Once you have installed Storm and configurated the environment (It is explained 
 
 ## To ilustrate an execution of this topology in a cluster mode, it is provided the example below:
 
-1) Connection to the cluster 
+###### 1) Connection to the cluster 
 
 First it is needed to access the cluster and start the necessary instances associated to this project:
 
@@ -125,7 +125,7 @@ The Storm UI has a friendly user interface to monitor the performance of each pr
 
 URL: http://138.4.110.141:41002
 
-2) Compile the project locally and copy files to the cluster:
+###### 2) Compile the project locally and copy files to the cluster
 
 ```
 mvn clean compile package appassembler:assemble
@@ -136,7 +136,7 @@ scp -P 51005 tweetsLogFile.log masteruser1@138.4.110.141:/home/masteruser1
 scp -P 51002 trendingTopology.jar masteruser1@138.4.110.141:/home/masteruser1
 ```
 
-3) Submit the topology to the cluster using the storm client, specifying the path to your jar, the classname to run, and any arguments it will use:
+###### 3) Submit the topology to the cluster using the storm client, specifying the path to your jar, the classname to run, and any arguments it will use
 
 ```
 mvn assembly:assembly 
