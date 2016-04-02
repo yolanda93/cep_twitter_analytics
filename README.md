@@ -27,12 +27,12 @@ First, it is needed to start kafka and zookeper servers
 
 ------------ Start kafka -----------------------------------------------------------------------
 	
-     1. Start Zookeeper server in Kafka using following script in your kafka installation folder  
+#### 1. Start Zookeeper server in Kafka using following script in your kafka installation folder  
 
 ```
      ./bin/zookeeper-server-start.sh config/zookeeper.properties &
 ```
-     2. Start Kafka server using following script 
+#### 2. Start Kafka server using following script 
 
 ```
      ./bin/kafka-server-start.sh config/server.properties  &	
