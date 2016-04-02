@@ -89,7 +89,7 @@ Once you have installed Storm and configurated the environment (It is explained 
 ```
 
 
-## To ilustrate an execution of this topology in a cluster mode, it is provided the example below:
+##### To ilustrate an execution of this topology in a cluster mode, it is provided the example below:
 
 ###### 1) Connection to the cluster 
 
@@ -97,15 +97,15 @@ First it is needed to access the cluster and start the necessary instances assoc
 
 
 ```
-ssh masteruser1@138.4.110.141 -p 51005 --> twitterApp
-ssh masteruser1@138.4.110.141 -p 51004 --> kafka
+ssh masteruser1@138.4.110.141 -p 51005 # --> twitterApp
+ssh masteruser1@138.4.110.141 -p 51004 # --> kafka
 
 ./kafka_2.10-0.8.2.1/bin/kafka-server-start.sh ./kafka_2.10-0.8.2.1/config/server.properties
 
 ./kafka-topics.sh --create --topic twitter-topic --zookeeper node2 --partitions 2 --replication-factor 1
 ./kafka-topics.sh  --describe --zookeeper node2  
 
-zssh masteruser1@138.4.110.141 -p 51002 --> storm H2	
+zssh masteruser1@138.4.110.141 -p 51002  # --> storm H2	
 
 ./zookeeper-3.4.6/bin/zkServer.sh start
 ./zookeeper-3.4.6/bin/zkServer.sh stop
@@ -114,7 +114,7 @@ Nimbus: ./apache-storm-0.10.0/bin/storm nimbus
 UI: ./apache-storm-0.10.0/bin/storm ui
 Supervisor: ./apache-storm-0.10.0/bin/storm supervisor
 
-ssh masteruser1@138.4.110.141 -p 51003 --> storm H3
+ssh masteruser1@138.4.110.141 -p 51003 # --> storm H3
 
 Supervisor: ./apache-storm-0.10.0/bin/storm supervisor
 
