@@ -4,6 +4,12 @@ This application is an example of how to scalably process any big data stream wi
 
 The aim of this project is to have an application that performs the trending topics in Twitter for a given period of time and frecuency. For this purpose, it is used sliding window analysis algorithm which is one of the most common algorithms in complex event processing.
 
+## Index 
+
+* twitterApp 
+  * Usage
+
+
 ## twitterApp
 
 The startTwitterApp.sh script is a java application that reads tweets from both the Twitter Streaming API (MODE 2) and a preloaded log file (MODE 1). This application uses Apache Kafka to store the tweets and send them through a topic "twitter-topic" with a storm bolt as a consumer of this topic. 
